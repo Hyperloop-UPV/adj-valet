@@ -33,7 +33,16 @@ export const SimplePacketForm = ({ boardName, packet, isCreating, onSubmit }: Pr
         return measurementsWithBoard;
     };
 
+    // Get available sockets from the current board
+    const getAvailableSockets = () => {
+        if (!config) return [];
+        const board = config.boards.find(b => Object.keys(b)[0] === boardName);
+        if (!board) return [];
+        return board[boardName].sockets || [];
+    };
+
     const allMeasurements = getAllMeasurements();
+    const availableSockets = getAvailableSockets();
     
     // Filter measurements based on search term
     const filteredMeasurements = allMeasurements.filter(item =>
@@ -147,6 +156,42 @@ export const SimplePacketForm = ({ boardName, packet, isCreating, onSubmit }: Pr
                         <option value="data">Data (sensor readings, measurements)</option>
                         <option value="order">Order (commands, control instructions)</option>
                     </select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Socket</label>
+                        <select
+                            value={formData.socket || ''}
+                            onChange={(e) => handleFieldChange('socket', e.target.value || undefined)}
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                        >
+                            <option value="">None</option>
+                            {availableSockets.map((socket) => (
+                                <option key={socket.name} value={socket.name}>
+                                    {socket.name} ({socket.type})
+                                </option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-gray-500 mt-1">
+                            Assign this packet to a socket for network communication
+                        </p>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Period (ms)</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={formData.period_ms ?? ''}
+                            onChange={(e) => handleFieldChange('period_ms', e.target.value ? parseFloat(e.target.value) : undefined)}
+                            placeholder="e.g. 16.67"
+                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Transmission period in milliseconds
+                        </p>
+                    </div>
                 </div>
 
                 <div className="col-span-full">

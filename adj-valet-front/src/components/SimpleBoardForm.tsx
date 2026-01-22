@@ -6,6 +6,8 @@ import { SimpleMeasurementForm } from './SimpleMeasurementForm';
 import { SimplePacketForm } from './SimplePacketForm';
 import { Measurement } from '../types/Measurement';
 import { Packet } from '../types/Packet';
+import { Socket } from '../types/Socket';
+import { SocketForm } from './SocketForm';
 
 interface Props {
     boardName: BoardName;
@@ -31,6 +33,8 @@ export const SimpleBoardForm = ({ boardName, boardInfo, setSelectedSection }: Pr
     const [selectedMeasurement, setSelectedMeasurement] = useState<Measurement | null>(null);
     const [isPacketModalOpen, setIsPacketModalOpen] = useState(false);
     const [selectedPacket, setSelectedPacket] = useState<Packet | null>(null);
+    const [isSocketModalOpen, setIsSocketModalOpen] = useState(false);
+    const [selectedSocket, setSelectedSocket] = useState<Socket | null>(null);
 
     // Update local board info when the store changes
     useEffect(() => {
@@ -98,11 +102,28 @@ export const SimpleBoardForm = ({ boardName, boardInfo, setSelectedSection }: Pr
         setIsPacketModalOpen(true);
     };
 
+    const handleSocketClick = (socket: Socket) => {
+        setSelectedSocket(socket);
+        setIsSocketModalOpen(true);
+    };
+
+    const handleAddSocket = () => {
+        const newSocket: Socket = {
+            type: 'ServerSocket',
+            name: '',
+            port: 0
+        };
+        setSelectedSocket(newSocket);
+        setIsSocketModalOpen(true);
+    };
+
     const closeModals = () => {
         setIsMeasurementModalOpen(false);
         setIsPacketModalOpen(false);
+        setIsSocketModalOpen(false);
         setSelectedMeasurement(null);
         setSelectedPacket(null);
+        setSelectedSocket(null);
     };
 
     return (
@@ -149,8 +170,8 @@ export const SimpleBoardForm = ({ boardName, boardInfo, setSelectedSection }: Pr
                 )}
             </div>
 
-            {/* Three-column layout */}
-            <div className="flex-1 grid grid-cols-3 gap-6 px-6 pb-6">
+            {/* Four-column layout */}
+            <div className="flex-1 grid grid-cols-4 gap-6 px-6 pb-6">
                 {/* General Information Column */}
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -194,6 +215,10 @@ export const SimpleBoardForm = ({ boardName, boardInfo, setSelectedSection }: Pr
                                     <div className="flex justify-between">
                                         <span>Packets:</span>
                                         <span className="font-medium">{localBoardInfo.packets.length}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Sockets:</span>
+                                        <span className="font-medium">{(localBoardInfo.sockets || []).length}</span>
                                     </div>
                                 </div>
                             </div>
@@ -294,6 +319,54 @@ export const SimpleBoardForm = ({ boardName, boardInfo, setSelectedSection }: Pr
                         )}
                     </div>
                 </div>
+
+                {/* Sockets Column */}
+                <div className="bg-white rounded-lg shadow-md p-6">
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+                            <i className="fa-solid fa-plug text-emerald-600"></i>
+                            Sockets
+                        </h2>
+                        <button
+                            onClick={handleAddSocket}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-1"
+                        >
+                            <i className="fa-solid fa-plus"></i>
+                            Add
+                        </button>
+                    </div>
+                    
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {(localBoardInfo.sockets || []).length > 0 ? (
+                            (localBoardInfo.sockets || []).map((socket, index) => (
+                                <div 
+                                    key={index} 
+                                    className="flex justify-between items-center bg-emerald-50 p-3 rounded cursor-pointer hover:bg-emerald-100 transition-colors border border-emerald-200"
+                                    onClick={() => handleSocketClick(socket)}
+                                >
+                                    <div>
+                                        <div className="font-medium text-emerald-800">{socket.name}</div>
+                                        <div className="text-xs text-gray-500">Type: {socket.type}</div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="text-sm text-gray-600">
+                                            {socket.port ? `Port: ${socket.port}` : socket.local_port ? `Local: ${socket.local_port}` : ''}
+                                        </div>
+                                        <div className="text-xs text-gray-400">
+                                            {socket.remote_ip || ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-8 text-gray-500">
+                                <i className="fa-solid fa-plug text-4xl text-gray-300 mb-2"></i>
+                                <p>No sockets configured</p>
+                                <p className="text-sm">Click "Add" to create your first socket</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
 
             {/* Measurement Modal */}
@@ -318,6 +391,18 @@ export const SimpleBoardForm = ({ boardName, boardInfo, setSelectedSection }: Pr
                             (p.id && selectedPacket.id && p.id === selectedPacket.id) || 
                             (!p.id && !selectedPacket.id && p.name === selectedPacket.name)
                         )}
+                        onSubmit={closeModals}
+                    />
+                )}
+            </Modal>
+
+            {/* Socket Modal */}
+            <Modal isOpen={isSocketModalOpen} onClose={closeModals}>
+                {selectedSocket && (
+                    <SocketForm
+                        boardName={boardName}
+                        socket={selectedSocket}
+                        isCreating={selectedSocket.name === ''}
                         onSubmit={closeModals}
                     />
                 )}
