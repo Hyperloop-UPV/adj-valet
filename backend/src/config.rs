@@ -594,6 +594,27 @@ impl ADJConfig {
         let boards_dir = adj_path.join("boards");
         fs::create_dir_all(&boards_dir)?;
 
+        // Get list of board names that should exist
+        let valid_board_names: std::collections::HashSet<String> = self
+            .boards
+            .iter()
+            .map(|entry| entry.name().clone())
+            .collect();
+
+        // Delete board folders that are no longer in the config
+        if boards_dir.exists() {
+            for entry in fs::read_dir(&boards_dir)? {
+                let entry = entry?;
+                let dir_name = entry.file_name().to_string_lossy().to_string();
+                if entry.path().is_dir() && !valid_board_names.contains(&dir_name) {
+                    info!("Removing deleted board directory: {}", dir_name);
+                    if let Err(e) = fs::remove_dir_all(entry.path()) {
+                        warn!("Failed to remove board directory {}: {}", dir_name, e);
+                    }
+                }
+            }
+        }
+
         for board_entry in &self.boards {
             let board_name = board_entry.name();
             let board = board_entry.board();
@@ -669,10 +690,15 @@ impl ADJConfig {
     }
 
     fn save_board_sockets(&self, sockets: &[Socket], board_dir: &Path) -> Result<()> {
+        let path = board_dir.join("sockets.json");
         if !sockets.is_empty() {
-            let path = board_dir.join("sockets.json");
             let content = serde_json::to_string_pretty(sockets)?;
             fs::write(path, content)?;
+        } else {
+            // Delete sockets.json if it exists and there are no sockets
+            if path.exists() {
+                fs::remove_file(path)?;
+            }
         }
         Ok(())
     }
