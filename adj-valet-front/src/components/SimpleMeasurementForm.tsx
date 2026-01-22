@@ -14,6 +14,8 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
     const { addMeasurement, updateMeasurement, removeMeasurement } = useADJActions();
     const [formData, setFormData] = useState<Measurement>(measurement);
     const [enumInputValue, setEnumInputValue] = useState(measurement.enumValues?.join(', ') || '');
+    const [hasSafeRange, setHasSafeRange] = useState(!!measurement.safeRange);
+    const [hasWarningRange, setHasWarningRange] = useState(!!measurement.warningRange);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,10 +33,13 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
             return;
         }
 
-        // Create the final form data with processed enum values
-        const finalFormData = {
+        // Create the final form data with processed enum values and conditional ranges
+        const processedEnumValues = enumInputValue.split(',').map(v => v.trim()).filter(v => v.length > 0);
+        const finalFormData: Measurement = {
             ...formData,
-            enumValues: enumInputValue.split(',').map(v => v.trim()).filter(v => v.length > 0)
+            enumValues: formData.type === 'enum' && processedEnumValues.length > 0 ? processedEnumValues : undefined,
+            safeRange: hasSafeRange ? formData.safeRange : undefined,
+            warningRange: hasWarningRange ? formData.warningRange : undefined,
         };
 
         if (isCreating) {
@@ -71,6 +76,20 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
                     : [currentRange[0], numValue]
             };
         });
+    };
+
+    const handleSafeRangeToggle = (enabled: boolean) => {
+        setHasSafeRange(enabled);
+        if (enabled && !formData.safeRange) {
+            setFormData(prev => ({ ...prev, safeRange: [0, 0] }));
+        }
+    };
+
+    const handleWarningRangeToggle = (enabled: boolean) => {
+        setHasWarningRange(enabled);
+        if (enabled && !formData.warningRange) {
+            setFormData(prev => ({ ...prev, warningRange: [0, 0] }));
+        }
     };
 
     const handleEnumValuesChange = (value: string) => {
@@ -180,59 +199,81 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
                 {formData.type !== 'enum' && (
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Safe Range</label>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <input
-                                        type="number"
-                                        step="any"
-                                        value={formData.safeRange?.[0] || ''}
-                                        onChange={(e) => handleRangeChange('safeRange', 0, e.target.value)}
-                                        placeholder="Min"
-                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                    />
-                                    <span className="text-xs text-gray-500 mt-1 block">Minimum</span>
-                                </div>
-                                <div>
-                                    <input
-                                        type="number"
-                                        step="any"
-                                        value={formData.safeRange?.[1] || ''}
-                                        onChange={(e) => handleRangeChange('safeRange', 1, e.target.value)}
-                                        placeholder="Max"
-                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                    />
-                                    <span className="text-xs text-gray-500 mt-1 block">Maximum</span>
-                                </div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <input
+                                    type="checkbox"
+                                    id="hasSafeRange"
+                                    checked={hasSafeRange}
+                                    onChange={(e) => handleSafeRangeToggle(e.target.checked)}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <label htmlFor="hasSafeRange" className="text-sm font-medium text-gray-700">Safe Range</label>
                             </div>
+                            {hasSafeRange && (
+                                <div className="grid grid-cols-2 gap-2 ml-6">
+                                    <div>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            value={formData.safeRange?.[0] ?? ''}
+                                            onChange={(e) => handleRangeChange('safeRange', 0, e.target.value)}
+                                            placeholder="Min"
+                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                        />
+                                        <span className="text-xs text-gray-500 mt-1 block">Minimum</span>
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            value={formData.safeRange?.[1] ?? ''}
+                                            onChange={(e) => handleRangeChange('safeRange', 1, e.target.value)}
+                                            placeholder="Max"
+                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                        />
+                                        <span className="text-xs text-gray-500 mt-1 block">Maximum</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Warning Range</label>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <input
-                                        type="number"
-                                        step="any"
-                                        value={formData.warningRange?.[0] || ''}
-                                        onChange={(e) => handleRangeChange('warningRange', 0, e.target.value)}
-                                        placeholder="Min"
-                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                    />
-                                    <span className="text-xs text-gray-500 mt-1 block">Minimum</span>
-                                </div>
-                                <div>
-                                    <input
-                                        type="number"
-                                        step="any"
-                                        value={formData.warningRange?.[1] || ''}
-                                        onChange={(e) => handleRangeChange('warningRange', 1, e.target.value)}
-                                        placeholder="Max"
-                                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                                    />
-                                    <span className="text-xs text-gray-500 mt-1 block">Maximum</span>
-                                </div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <input
+                                    type="checkbox"
+                                    id="hasWarningRange"
+                                    checked={hasWarningRange}
+                                    onChange={(e) => handleWarningRangeToggle(e.target.checked)}
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <label htmlFor="hasWarningRange" className="text-sm font-medium text-gray-700">Warning Range</label>
                             </div>
+                            {hasWarningRange && (
+                                <div className="grid grid-cols-2 gap-2 ml-6">
+                                    <div>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            value={formData.warningRange?.[0] ?? ''}
+                                            onChange={(e) => handleRangeChange('warningRange', 0, e.target.value)}
+                                            placeholder="Min"
+                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                        />
+                                        <span className="text-xs text-gray-500 mt-1 block">Minimum</span>
+                                    </div>
+                                    <div>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            value={formData.warningRange?.[1] ?? ''}
+                                            onChange={(e) => handleRangeChange('warningRange', 1, e.target.value)}
+                                            placeholder="Max"
+                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                        />
+                                        <span className="text-xs text-gray-500 mt-1 block">Maximum</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
