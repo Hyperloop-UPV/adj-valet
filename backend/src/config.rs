@@ -1,10 +1,6 @@
 use crate::error::{AppError, Result};
 use serde::{Deserialize, Serialize};
-use std::{
-    collections::HashMap,
-    fs,
-    path::Path,
-};
+use std::{collections::HashMap, fs, path::Path};
 use tracing::{info, warn};
 
 /// Top-level ADJ configuration
@@ -58,6 +54,24 @@ pub struct Board {
     pub board_ip: String,
     pub measurements: Vec<Measurement>,
     pub packets: Vec<Packet>,
+    #[serde(default)]
+    pub sockets: Vec<Socket>,
+}
+
+/// Socket definition
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Socket {
+    #[serde(rename = "type")]
+    pub socket_type: String,
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub port: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub local_port: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub remote_ip: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub remote_port: Option<u16>,
 }
 
 /// Measurement definition
@@ -88,7 +102,11 @@ pub struct Packet {
     #[serde(default)]
     pub variables: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub id: Option<u32>, // Some packets have IDs, some don't
+    pub id: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub period_ms: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub socket: Option<String>,
 }
 
 impl ADJConfig {
@@ -201,28 +219,38 @@ impl ADJConfig {
         Ok(serde_json::from_str(&content)?)
     }
 
-
     fn load_boards(adj_path: &Path) -> Result<Vec<BoardEntry>> {
         // First, read boards.json to get the list of boards and their paths
         let boards_json_path = adj_path.join("boards.json");
         if !boards_json_path.exists() {
-            warn!("boards.json not found at: {}, scanning boards directory", boards_json_path.display());
+            warn!(
+                "boards.json not found at: {}, scanning boards directory",
+                boards_json_path.display()
+            );
             return Self::load_boards_from_directory(adj_path);
         }
 
         info!("Reading boards.json from: {}", boards_json_path.display());
         let boards_content = fs::read_to_string(&boards_json_path)?;
         let board_list: HashMap<String, String> = serde_json::from_str(&boards_content)?;
-        
-        info!("Found {} boards in boards.json: {:?}", board_list.len(), board_list.keys().collect::<Vec<_>>());
+
+        info!(
+            "Found {} boards in boards.json: {:?}",
+            board_list.len(),
+            board_list.keys().collect::<Vec<_>>()
+        );
 
         let mut boards = Vec::new();
 
         for (board_name, board_path) in board_list {
             let full_board_path = adj_path.join(&board_path);
-            
-            info!("Loading board '{}' from: {}", board_name, full_board_path.display());
-            
+
+            info!(
+                "Loading board '{}' from: {}",
+                board_name,
+                full_board_path.display()
+            );
+
             if !full_board_path.exists() {
                 warn!("Board file not found: {}", full_board_path.display());
                 continue;
@@ -234,8 +262,12 @@ impl ADJConfig {
             // Try to load the board
             match Self::load_single_board_from_path(&board_name, &full_board_path, board_dir) {
                 Ok(board) => {
-                    info!("Successfully loaded board '{}' with {} measurements and {} packets", 
-                           board_name, board.measurements.len(), board.packets.len());
+                    info!(
+                        "Successfully loaded board '{}' with {} measurements and {} packets",
+                        board_name,
+                        board.measurements.len(),
+                        board.packets.len()
+                    );
                     boards.push(BoardEntry::new(board_name, board));
                 }
                 Err(e) => {
@@ -283,30 +315,48 @@ impl ADJConfig {
         Ok(boards)
     }
 
-    fn load_single_board_from_path(_board_name: &str, board_file_path: &Path, board_dir: &Path) -> Result<Board> {
+    fn load_single_board_from_path(
+        _board_name: &str,
+        board_file_path: &Path,
+        board_dir: &Path,
+    ) -> Result<Board> {
         // Load main board JSON from the specific file path
         let content = fs::read_to_string(board_file_path)?;
         let board_info: serde_json::Value = serde_json::from_str(&content)?;
 
         // Extract basic board info
         let board_id = board_info["board_id"].as_u64().unwrap_or(0) as u32;
-        let board_ip = board_info["board_ip"].as_str().unwrap_or("0.0.0.0").to_string();
+        let board_ip = board_info["board_ip"]
+            .as_str()
+            .unwrap_or("0.0.0.0")
+            .to_string();
 
         // Load measurements from paths specified in board JSON
         let empty_array = vec![];
-        let measurement_files = board_info["measurements"].as_array().unwrap_or(&empty_array);
+        let measurement_files = board_info["measurements"]
+            .as_array()
+            .unwrap_or(&empty_array);
         let measurements = Self::load_measurements_from_files(measurement_files, board_dir)?;
 
         // Load packets from paths specified in board JSON
         let empty_array_packets = vec![];
-        let packet_files = board_info["packets"].as_array().unwrap_or(&empty_array_packets);
+        let packet_files = board_info["packets"]
+            .as_array()
+            .unwrap_or(&empty_array_packets);
         let packets = Self::load_packets_from_files(packet_files, board_dir)?;
+
+        let empty_array_sockets = vec![];
+        let socket_files = board_info["sockets"]
+            .as_array()
+            .unwrap_or(&empty_array_sockets);
+        let sockets = Self::load_sockets_from_files(socket_files, board_dir)?;
 
         Ok(Board {
             board_id,
             board_ip,
             measurements,
             packets,
+            sockets,
         })
     }
 
@@ -317,46 +367,63 @@ impl ADJConfig {
             let content = fs::read_to_string(main_json_path)?;
             serde_json::from_str(&content)?
         } else {
-            // Create default board info if main JSON doesn't exist
-            warn!("Main board JSON not found for '{}', using defaults", board_name);
+            warn!(
+                "Main board JSON not found for '{}', using defaults",
+                board_name
+            );
             serde_json::json!({
                 "board_id": 0,
                 "board_ip": "0.0.0.0",
                 "measurements": [],
-                "packets": []
+                "packets": [],
+                "sockets": []
             })
         };
 
-        // Extract basic board info
         let board_id = board_info["board_id"].as_u64().unwrap_or(0) as u32;
-        let board_ip = board_info["board_ip"].as_str().unwrap_or("0.0.0.0").to_string();
+        let board_ip = board_info["board_ip"]
+            .as_str()
+            .unwrap_or("0.0.0.0")
+            .to_string();
 
-        // Load measurements from paths specified in board JSON
         let empty_array = vec![];
-        let measurement_files = board_info["measurements"].as_array().unwrap_or(&empty_array);
+        let measurement_files = board_info["measurements"]
+            .as_array()
+            .unwrap_or(&empty_array);
         let measurements = Self::load_measurements_from_files(measurement_files, board_dir)?;
 
-        // Load packets from paths specified in board JSON
         let empty_array_packets = vec![];
-        let packet_files = board_info["packets"].as_array().unwrap_or(&empty_array_packets);
+        let packet_files = board_info["packets"]
+            .as_array()
+            .unwrap_or(&empty_array_packets);
         let packets = Self::load_packets_from_files(packet_files, board_dir)?;
+
+        let empty_array_sockets = vec![];
+        let socket_files = board_info["sockets"]
+            .as_array()
+            .unwrap_or(&empty_array_sockets);
+        let sockets = Self::load_sockets_from_files(socket_files, board_dir)?;
 
         Ok(Board {
             board_id,
             board_ip,
             measurements,
             packets,
+            sockets,
         })
     }
 
-    fn load_measurements_from_files(measurement_files: &[serde_json::Value], board_dir: &Path) -> Result<Vec<Measurement>> {
+    fn load_measurements_from_files(
+        measurement_files: &[serde_json::Value],
+        board_dir: &Path,
+    ) -> Result<Vec<Measurement>> {
         let mut all_measurements = Vec::new();
 
         for file_value in measurement_files {
             if let Some(file_name) = file_value.as_str() {
                 let measurements_path = board_dir.join(file_name);
                 info!("Loading measurements from: {}", measurements_path.display());
-                
+
                 if measurements_path.exists() {
                     match fs::read_to_string(&measurements_path) {
                         Ok(content) => {
@@ -364,25 +431,40 @@ impl ADJConfig {
                                 warn!("Empty measurements file: {}", measurements_path.display());
                                 continue;
                             }
-                            
+
                             match serde_json::from_str::<Vec<Measurement>>(&content) {
                                 Ok(measurements) => {
-                                    info!("Loaded {} measurements from {}", measurements.len(), file_name);
+                                    info!(
+                                        "Loaded {} measurements from {}",
+                                        measurements.len(),
+                                        file_name
+                                    );
                                     all_measurements.extend(measurements);
                                 }
                                 Err(e) => {
-                                    warn!("Failed to parse measurements from {}: {}", measurements_path.display(), e);
+                                    warn!(
+                                        "Failed to parse measurements from {}: {}",
+                                        measurements_path.display(),
+                                        e
+                                    );
                                     continue;
                                 }
                             }
                         }
                         Err(e) => {
-                            warn!("Failed to read measurements file {}: {}", measurements_path.display(), e);
+                            warn!(
+                                "Failed to read measurements file {}: {}",
+                                measurements_path.display(),
+                                e
+                            );
                             continue;
                         }
                     }
                 } else {
-                    warn!("Measurements file not found: {}", measurements_path.display());
+                    warn!(
+                        "Measurements file not found: {}",
+                        measurements_path.display()
+                    );
                 }
             }
         }
@@ -390,14 +472,17 @@ impl ADJConfig {
         Ok(all_measurements)
     }
 
-    fn load_packets_from_files(packet_files: &[serde_json::Value], board_dir: &Path) -> Result<Vec<Packet>> {
+    fn load_packets_from_files(
+        packet_files: &[serde_json::Value],
+        board_dir: &Path,
+    ) -> Result<Vec<Packet>> {
         let mut all_packets = Vec::new();
 
         for file_value in packet_files {
             if let Some(file_name) = file_value.as_str() {
                 let packet_path = board_dir.join(file_name);
                 info!("Loading packets from: {}", packet_path.display());
-                
+
                 if packet_path.exists() {
                     match fs::read_to_string(&packet_path) {
                         Ok(content) => {
@@ -405,20 +490,28 @@ impl ADJConfig {
                                 warn!("Empty packet file: {}", packet_path.display());
                                 continue;
                             }
-                            
+
                             match serde_json::from_str::<Vec<Packet>>(&content) {
                                 Ok(packets) => {
                                     info!("Loaded {} packets from {}", packets.len(), file_name);
                                     all_packets.extend(packets);
                                 }
                                 Err(e) => {
-                                    warn!("Failed to parse packets from {}: {}", packet_path.display(), e);
+                                    warn!(
+                                        "Failed to parse packets from {}: {}",
+                                        packet_path.display(),
+                                        e
+                                    );
                                     continue;
                                 }
                             }
                         }
                         Err(e) => {
-                            warn!("Failed to read packet file {}: {}", packet_path.display(), e);
+                            warn!(
+                                "Failed to read packet file {}: {}",
+                                packet_path.display(),
+                                e
+                            );
                             continue;
                         }
                     }
@@ -429,6 +522,58 @@ impl ADJConfig {
         }
 
         Ok(all_packets)
+    }
+
+    fn load_sockets_from_files(
+        socket_files: &[serde_json::Value],
+        board_dir: &Path,
+    ) -> Result<Vec<Socket>> {
+        let mut all_sockets = Vec::new();
+
+        for file_value in socket_files {
+            if let Some(file_name) = file_value.as_str() {
+                let socket_path = board_dir.join(file_name);
+                info!("Loading sockets from: {}", socket_path.display());
+
+                if socket_path.exists() {
+                    match fs::read_to_string(&socket_path) {
+                        Ok(content) => {
+                            if content.trim().is_empty() {
+                                warn!("Empty socket file: {}", socket_path.display());
+                                continue;
+                            }
+
+                            match serde_json::from_str::<Vec<Socket>>(&content) {
+                                Ok(sockets) => {
+                                    info!("Loaded {} sockets from {}", sockets.len(), file_name);
+                                    all_sockets.extend(sockets);
+                                }
+                                Err(e) => {
+                                    warn!(
+                                        "Failed to parse sockets from {}: {}",
+                                        socket_path.display(),
+                                        e
+                                    );
+                                    continue;
+                                }
+                            }
+                        }
+                        Err(e) => {
+                            warn!(
+                                "Failed to read socket file {}: {}",
+                                socket_path.display(),
+                                e
+                            );
+                            continue;
+                        }
+                    }
+                } else {
+                    warn!("Socket file not found: {}", socket_path.display());
+                }
+            }
+        }
+
+        Ok(all_sockets)
     }
 
     fn save_general_info(&self, adj_path: &Path) -> Result<()> {
@@ -449,32 +594,53 @@ impl ADJConfig {
         let boards_dir = adj_path.join("boards");
         fs::create_dir_all(&boards_dir)?;
 
+        // Get list of board names that should exist
+        let valid_board_names: std::collections::HashSet<String> = self
+            .boards
+            .iter()
+            .map(|entry| entry.name().clone())
+            .collect();
+
+        // Delete board folders that are no longer in the config
+        if boards_dir.exists() {
+            for entry in fs::read_dir(&boards_dir)? {
+                let entry = entry?;
+                let dir_name = entry.file_name().to_string_lossy().to_string();
+                if entry.path().is_dir() && !valid_board_names.contains(&dir_name) {
+                    info!("Removing deleted board directory: {}", dir_name);
+                    if let Err(e) = fs::remove_dir_all(entry.path()) {
+                        warn!("Failed to remove board directory {}: {}", dir_name, e);
+                    }
+                }
+            }
+        }
+
         for board_entry in &self.boards {
             let board_name = board_entry.name();
             let board = board_entry.board();
             let board_dir = boards_dir.join(board_name);
             fs::create_dir_all(&board_dir)?;
 
-            // Save main board JSON
             self.save_board_main(board_name, board, &board_dir)?;
-
-            // Save measurements
             self.save_board_measurements(board_name, &board.measurements, &board_dir)?;
-
-            // Save packets (group by type)
             self.save_board_packets(&board.packets, &board_dir)?;
+            self.save_board_sockets(&board.sockets, &board_dir)?;
         }
 
         Ok(())
     }
 
     fn save_board_main(&self, board_name: &str, board: &Board, board_dir: &Path) -> Result<()> {
-        let main_json = serde_json::json!({
+        let mut main_json = serde_json::json!({
             "board_id": board.board_id,
             "board_ip": board.board_ip,
             "measurements": [format!("{}_measurements.json", board_name)],
             "packets": ["packets.json", "orders.json"]
         });
+
+        if !board.sockets.is_empty() {
+            main_json["sockets"] = serde_json::json!(["sockets.json"]);
+        }
 
         let path = board_dir.join(format!("{}.json", board_name));
         let content = serde_json::to_string_pretty(&main_json)?;
@@ -520,6 +686,20 @@ impl ADJConfig {
             fs::write(path, content)?;
         }
 
+        Ok(())
+    }
+
+    fn save_board_sockets(&self, sockets: &[Socket], board_dir: &Path) -> Result<()> {
+        let path = board_dir.join("sockets.json");
+        if !sockets.is_empty() {
+            let content = serde_json::to_string_pretty(sockets)?;
+            fs::write(path, content)?;
+        } else {
+            // Delete sockets.json if it exists and there are no sockets
+            if path.exists() {
+                fs::remove_file(path)?;
+            }
+        }
         Ok(())
     }
 }

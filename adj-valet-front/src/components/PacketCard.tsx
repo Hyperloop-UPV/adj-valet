@@ -1,5 +1,5 @@
 interface Props {
-    packetId: string;
+    packetId?: number;
     packetName: string;
     onSelect: () => void;
 }
@@ -14,7 +14,9 @@ export const PacketCard = ({ packetId, packetName, onSelect }: Props) => {
                 <div className="text-lg font-medium text-gray-900">
                     {packetName}
                 </div>
-                <div className="text-sm text-gray-500">ID: {packetId}</div>
+                <div className="text-sm text-gray-500">
+                    ID: {packetId ?? '-'}
+                </div>
             </div>
         </div>
     );
