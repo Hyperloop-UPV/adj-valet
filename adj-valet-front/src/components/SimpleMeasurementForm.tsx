@@ -14,8 +14,8 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
     const { addMeasurement, updateMeasurement, removeMeasurement } = useADJActions();
     const [formData, setFormData] = useState<Measurement>(measurement);
     const [enumInputValue, setEnumInputValue] = useState(measurement.enumValues?.join(', ') || '');
-    const [hasSafeRange, setHasSafeRange] = useState(!!measurement.safeRange);
-    const [hasWarningRange, setHasWarningRange] = useState(!!measurement.warningRange);
+    const [hasSafeRange, setHasSafeRange] = useState(isCreating ? false : !!measurement.safeRange);
+    const [hasWarningRange, setHasWarningRange] = useState(isCreating ? false : !!measurement.warningRange);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
