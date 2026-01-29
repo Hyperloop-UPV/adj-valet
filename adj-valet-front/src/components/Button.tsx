@@ -7,15 +7,15 @@ interface Props {
 
 export const Button = ({ title, isSelected, onClick }: Props) => (
     <div
-        className="h-12 w-full cursor-pointer rounded-2xl bg-white"
+        className={`w-full p-1 cursor-pointer rounded-lg bg-gray-200/50 hover:bg-gray-300/70 transition-colors ${isSelected ? 'bg-orange-300/60' : ''}`}
         onClick={onClick}
     >
         <div className="flex h-full items-center gap-2 px-4">
             {isSelected && (
-                <i className="fa-solid fa-caret-right text-orange-500"></i>
+                <i className="fa-solid fa-caret-right text-orange-600"></i>
             )}
             <div
-                className={`text-lg font-semibold ${isSelected ? 'text-orange-500' : 'text-blue-900'}`}
+                className={`text-lg font-semibold ${isSelected ? 'text-orange-600' : 'text-black'}`}
             >
                 {title}
             </div>

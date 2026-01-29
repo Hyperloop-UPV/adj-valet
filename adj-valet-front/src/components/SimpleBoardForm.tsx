@@ -21,7 +21,7 @@ export const SimpleBoardForm = ({
     setSelectedSection,
 }: Props) => {
     const { config } = useADJState();
-    const { updateBoard, addBoard, removeBoard } = useADJActions();
+    const { updateBoard, addBoard, removeBoard, removeMeasurement, removePacket, removeSocket } = useADJActions();
 
     // Get the current board info directly from the store instead of relying on props
     const currentBoardInfo =
@@ -168,31 +168,45 @@ export const SimpleBoardForm = ({
                             }}
                             autoFocus
                         />
+
                         <button
                             onClick={handleNameSave}
-                            className="text-green-600 hover:text-green-800"
+                            title="Save name"
+                            className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-200 transition-colors"
                         >
-                            <i className="fa-solid fa-check"></i>
+                            <i className="fa-solid fa-check text-lg" />
                         </button>
+
                         <button
                             onClick={handleNameCancel}
-                            className="text-red-600 hover:text-red-800"
+                            title="Cancel"
+                            className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
                         >
-                            <i className="fa-solid fa-times"></i>
+                            <i className="fa-solid fa-xmark text-lg" />
                         </button>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3 flex-row justify-between w-full">
                         <h1 className="text-2xl font-bold text-gray-800">
-                            Board: {boardName}
+                            {boardName}
                         </h1>
+                    <span className="flex gap-2">
                         <button
                             onClick={() => setIsEditingName(true)}
-                            className="p-1 text-gray-500 hover:text-blue-600"
+                            className="inline-flex items-center justify-center h-11 min-w-[44px] rounded-md px-3 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
                             title="Rename board"
                         >
-                            <i className="fa-solid fa-edit"></i>
+                            <i className="fa-solid fa-edit text-lg"></i>
                         </button>
+
+                        <button
+                            onClick={() => removeBoard(boardName)}
+                            className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-200 transition-colors"
+                            title="Delete board"
+                        >
+                            <i className="fa-solid fa-trash text-lg"></i>
+                        </button>
+                        </span>
                     </div>
                 )}
             </div>
@@ -200,14 +214,16 @@ export const SimpleBoardForm = ({
             {/* Four-column layout */}
             <div className="grid flex-1 grid-cols-4 gap-6 px-6 pb-6">
                 {/* General Information Column */}
-                <div className="rounded-lg bg-white p-6 shadow-md">
-                    <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold text-gray-800">
-                        <i className="fa-solid fa-info-circle text-blue-600"></i>
-                        General Information
-                    </h2>
+                <div className="max-h-[calc(100vh-6rem)] overflow-hidden rounded-lg border-1 border-gray-100/30 bg-gray-100/20">
+                    <div className="sticky top-0 mb-4 flex items-center justify-between bg-linear-to-b from-gray-100 to-gray-100/0 p-4 pt-0 pb-4">
+                        <h2 className="flex items-center gap-2 pt-3 text-xl font-semibold text-gray-800">
+                            <i className="fa-solid fa-info-circle text-blue-600"></i>
+                            General Information
+                        </h2>
+                    </div>
 
-                    <div className="space-y-4">
-                        <div>
+                    <div className="space-y-2 overflow-y-auto p-4 pt-0">
+                        <div className="rounded border border-gray-200 bg-white p-3">
                             <label className="mb-1 block text-sm font-medium text-gray-700">
                                 Board ID
                             </label>
@@ -221,7 +237,7 @@ export const SimpleBoardForm = ({
                             />
                         </div>
 
-                        <div>
+                        <div className="rounded border border-gray-200 bg-white p-3">
                             <label className="mb-1 block text-sm font-medium text-gray-700">
                                 Board IP Address
                             </label>
@@ -236,30 +252,25 @@ export const SimpleBoardForm = ({
                             />
                         </div>
 
-                        <div className="border-t pt-4">
-                            <div className="rounded-md bg-gray-50 p-3">
-                                <div className="text-sm text-gray-600">
-                                    <div className="flex justify-between">
-                                        <span>Measurements:</span>
-                                        <span className="font-medium">
-                                            {localBoardInfo.measurements.length}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Packets:</span>
-                                        <span className="font-medium">
-                                            {localBoardInfo.packets.length}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Sockets:</span>
-                                        <span className="font-medium">
-                                            {
-                                                (localBoardInfo.sockets || [])
-                                                    .length
-                                            }
-                                        </span>
-                                    </div>
+                        <div className="rounded-md bg-gray-50 p-3">
+                            <div className="text-sm text-gray-600">
+                                <div className="flex justify-between">
+                                    <span>Measurements:</span>
+                                    <span className="font-medium">
+                                        {localBoardInfo.measurements.length}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Packets:</span>
+                                    <span className="font-medium">
+                                        {localBoardInfo.packets.length}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Sockets:</span>
+                                    <span className="font-medium">
+                                        {(localBoardInfo.sockets || []).length}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -267,22 +278,21 @@ export const SimpleBoardForm = ({
                 </div>
 
                 {/* Measurements Column */}
-                <div className="rounded-lg bg-white p-6 shadow-md">
-                    <div className="mb-4 flex items-center justify-between">
-                        <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-800">
+                <div className="max-h-[calc(100vh-6rem)] overflow-scroll rounded-lg border-1 border-gray-100/30 bg-gray-100/20">
+                    <div className="sticky top-0 mb-4 flex items-center justify-between bg-linear-to-b from-gray-100 to-gray-100/0 p-4 pt-0 pb-4">
+                        <h2 className="flex items-center gap-2 pt-3 text-xl font-semibold text-gray-800">
                             <i className="fa-solid fa-chart-line text-blue-600"></i>
                             Measurements
                         </h2>
                         <button
                             onClick={handleAddMeasurement}
-                            className="flex items-center gap-1 rounded-md bg-blue-600 px-3 py-2 text-sm text-white transition-colors hover:bg-blue-700"
+                            className="mt-3 flex h-8 w-8 items-center justify-center gap-1 rounded-full bg-blue-600 text-sm text-white transition-colors hover:bg-blue-700"
                         >
                             <i className="fa-solid fa-plus"></i>
-                            Add
                         </button>
                     </div>
 
-                    <div className="max-h-96 space-y-2 overflow-y-auto">
+                    <div className="overflow-y space-y-2 p-4 pt-0">
                         {localBoardInfo.measurements.length > 0 ? (
                             localBoardInfo.measurements.map(
                                 (measurement, index) => (
@@ -318,7 +328,7 @@ export const SimpleBoardForm = ({
                                 <i className="fa-solid fa-chart-line mb-2 text-4xl text-gray-300"></i>
                                 <p>No measurements configured</p>
                                 <p className="text-sm">
-                                    Click "Add" to create your first measurement
+                                    Click "+" to create your first measurement
                                 </p>
                             </div>
                         )}
@@ -326,22 +336,21 @@ export const SimpleBoardForm = ({
                 </div>
 
                 {/* Packets Column */}
-                <div className="rounded-lg bg-white p-6 shadow-md">
-                    <div className="mb-4 flex items-center justify-between">
-                        <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-800">
+                <div className="max-h-[calc(100vh-6rem)] overflow-scroll rounded-lg border-1 border-gray-100/30 bg-gray-100/20">
+                    <div className="sticky top-0 mb-4 flex items-center justify-between bg-linear-to-b from-gray-100 to-gray-100/0 p-4 pt-0 pb-4">
+                        <h2 className="flex items-center gap-2 pt-3 text-xl font-semibold text-gray-800">
                             <i className="fa-solid fa-network-wired text-green-600"></i>
                             Packets
                         </h2>
                         <button
                             onClick={handleAddPacket}
-                            className="flex items-center gap-1 rounded-md bg-green-600 px-3 py-2 text-sm text-white transition-colors hover:bg-green-700"
+                            className="mt-3 flex h-8 w-8 items-center justify-center gap-1 rounded-full bg-green-600 text-sm text-white transition-colors hover:bg-green-700"
                         >
                             <i className="fa-solid fa-plus"></i>
-                            Add
                         </button>
                     </div>
 
-                    <div className="max-h-96 space-y-2 overflow-y-auto">
+                    <div className="space-y-2 overflow-scroll p-4 pt-0">
                         {localBoardInfo.packets.length > 0 ? (
                             localBoardInfo.packets.map((packet, index) => (
                                 <div
@@ -374,7 +383,7 @@ export const SimpleBoardForm = ({
                                 <i className="fa-solid fa-network-wired mb-2 text-4xl text-gray-300"></i>
                                 <p>No packets configured</p>
                                 <p className="text-sm">
-                                    Click "Add" to create your first packet
+                                    Click "+" to create your first packet
                                 </p>
                             </div>
                         )}
@@ -382,22 +391,21 @@ export const SimpleBoardForm = ({
                 </div>
 
                 {/* Sockets Column */}
-                <div className="rounded-lg bg-white p-6 shadow-md">
-                    <div className="mb-4 flex items-center justify-between">
-                        <h2 className="flex items-center gap-2 text-xl font-semibold text-gray-800">
+                <div className="max-h-[calc(100vh-6rem)] overflow-scroll rounded-lg border-1 border-gray-100/30 bg-gray-100/20">
+                    <div className="sticky top-0 mb-4 flex items-center justify-between bg-linear-to-b from-gray-100 to-gray-100/0 p-4 pt-0 pb-4">
+                        <h2 className="flex items-center gap-2 pt-3 text-xl font-semibold text-gray-800">
                             <i className="fa-solid fa-plug text-emerald-600"></i>
                             Sockets
                         </h2>
                         <button
                             onClick={handleAddSocket}
-                            className="flex items-center gap-1 rounded-md bg-emerald-600 px-3 py-2 text-sm text-white transition-colors hover:bg-emerald-700"
+                            className="mt-3 flex h-8 w-8 items-center justify-center gap-1 rounded-full bg-emerald-600 text-sm text-white transition-colors hover:bg-emerald-700"
                         >
                             <i className="fa-solid fa-plus"></i>
-                            Add
                         </button>
                     </div>
 
-                    <div className="max-h-96 space-y-2 overflow-y-auto">
+                    <div className="space-y-2 overflow-y-auto p-4 pt-0">
                         {(localBoardInfo.sockets || []).length > 0 ? (
                             (localBoardInfo.sockets || []).map(
                                 (socket, index) => (
@@ -436,7 +444,7 @@ export const SimpleBoardForm = ({
                                 <i className="fa-solid fa-plug mb-2 text-4xl text-gray-300"></i>
                                 <p>No sockets configured</p>
                                 <p className="text-sm">
-                                    Click "Add" to create your first socket
+                                    Click "+" to create your first socket
                                 </p>
                             </div>
                         )}
@@ -445,7 +453,23 @@ export const SimpleBoardForm = ({
             </div>
 
             {/* Measurement Modal */}
-            <Modal isOpen={isMeasurementModalOpen} onClose={closeModals}>
+            <Modal
+                isOpen={isMeasurementModalOpen}
+                onClose={closeModals}
+                title={selectedMeasurement?.name || 'Measurement'}
+                onDelete={
+                    selectedMeasurement && !localBoardInfo.measurements.some((m) => m.id === selectedMeasurement.id)
+                        ? undefined
+                        : () => {
+                              if (!selectedMeasurement) return;
+                              if (confirm(`Delete measurement ${selectedMeasurement.name}? This cannot be undone.`)) {
+                                  removeMeasurement(boardName, selectedMeasurement.id);
+                                  closeModals();
+                              }
+                          }
+                }
+                deleteLabel="Delete Measurement"
+            >
                 {selectedMeasurement && (
                     <SimpleMeasurementForm
                         boardName={boardName}
@@ -461,7 +485,27 @@ export const SimpleBoardForm = ({
             </Modal>
 
             {/* Packet Modal */}
-            <Modal isOpen={isPacketModalOpen} onClose={closeModals}>
+            <Modal
+                isOpen={isPacketModalOpen}
+                onClose={closeModals}
+                title={selectedPacket?.name || 'Packet'}
+                onDelete={
+                    selectedPacket && !localBoardInfo.packets.some(
+                        (p) =>
+                            (p.id && selectedPacket.id && p.id === selectedPacket.id) ||
+                            (!p.id && !selectedPacket.id && p.name === selectedPacket.name),
+                    )
+                        ? undefined
+                        : () => {
+                              if (!selectedPacket) return;
+                              if (confirm(`Delete packet ${selectedPacket.name}? This cannot be undone.`)) {
+                                  removePacket(boardName, String(selectedPacket.id));
+                                  closeModals();
+                              }
+                          }
+                }
+                deleteLabel="Delete Packet"
+            >
                 {selectedPacket && (
                     <SimplePacketForm
                         boardName={boardName}
@@ -483,7 +527,23 @@ export const SimpleBoardForm = ({
             </Modal>
 
             {/* Socket Modal */}
-            <Modal isOpen={isSocketModalOpen} onClose={closeModals}>
+            <Modal
+                isOpen={isSocketModalOpen}
+                onClose={closeModals}
+                title={selectedSocket?.name || 'Socket'}
+                onDelete={
+                    selectedSocket && (selectedSocket.name === '')
+                        ? undefined
+                        : () => {
+                              if (!selectedSocket) return;
+                              if (confirm(`Delete socket ${selectedSocket.name}? This cannot be undone.`)) {
+                                  removeSocket(boardName, selectedSocket.name);
+                                  closeModals();
+                              }
+                          }
+                }
+                deleteLabel="Delete Socket"
+            >
                 {selectedSocket && (
                     <SocketForm
                         boardName={boardName}

@@ -142,9 +142,6 @@ export const SocketForm = ({
     return (
         <div>
             <div className="flex flex-col rounded-xl p-4">
-                <h2 className="mb-4 text-xl font-bold text-zinc-700">
-                    {isCreating ? 'Create Socket' : 'Edit Socket'}
-                </h2>
                 <form onSubmit={handleSubmit}>
                     <Input
                         object={formData}

@@ -19,7 +19,7 @@ export const GeneralInfoForm = () => {
                 <p className="text-gray-600 mt-2">Configure global settings for the ADJ system</p>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
                 {Object.keys(config.general_info).map((section) => (
                     <ArrayObjForm key={section} sectionName={section} />
                 ))}

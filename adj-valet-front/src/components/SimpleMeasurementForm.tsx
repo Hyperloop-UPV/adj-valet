@@ -102,21 +102,7 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
     };
 
     return (
-        <div className="p-4 max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between mb-6 flex-shrink-0 pr-8">
-                <h2 className="text-2xl font-bold text-gray-800">
-                    {isCreating ? 'Add New Measurement' : `Edit Measurement: ${measurement.name}`}
-                </h2>
-                {!isCreating && (
-                    <button
-                        onClick={handleDelete}
-                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md text-sm transition-colors"
-                    >
-                        Delete
-                    </button>
-                )}
-            </div>
-
+        <div className="p-4 pt-0 max-h-[80vh] flex flex-col">
             <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 pr-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -280,18 +266,28 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
 
             </form>
 
-            <div className="flex justify-end gap-3 pt-4 border-t bg-white flex-shrink-0">
+            <div className="flex justify-end gap-3 pt-4 bg-white flex-shrink-0">
+                {!isCreating && (
+                    <button
+                        type="button"
+                        onClick={handleDelete}
+                        className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-200 transition-colors"
+                    >
+                        <i className="fa-solid fa-trash text-lg mr-2"></i> Delete
+                    </button>
+                )}
+
                 <button
                     type="button"
                     onClick={onSubmit}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                    className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
                 >
                     Cancel
                 </button>
                 <button
                     type="submit"
                     onClick={handleSubmit}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                    className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-colors"
                 >
                     {isCreating ? 'Add Measurement' : 'Update Measurement'}
                 </button>

@@ -48,8 +48,14 @@ export const ArrayObjForm = ({ sectionName }: Props) => {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6 min-w-80">
-            <h2 className="mb-6 text-xl font-bold text-gray-800 capitalize">{sectionName.replace(/_/g, ' ')}</h2>
+        <div className="bg-gray-100/20 rounded-lg border-1 border-gray-100/30 p-6 min-w-80 max-h-[calc(100vh-12rem)] overflow-y-auto">
+            <span className="mb-5 flex flex-row justify-between items-center w-full">
+            <h2 className="text-xl font-bold text-gray-800 capitalize">{sectionName.replace(/_/g, ' ')}</h2>
+                        <button
+                onClick={() => addGeneralInfoField(sectionName)}
+                className="bg-blue-600 hover:bg-blue-700 cursor-pointer p-1 w-8 h-8 rounded-full text-white transition-colors"
+            ><i className="fa-solid fa-plus w-4 h-4"></i></button>
+            </span>
 
             <div className="space-y-3">
                 {Object.entries(
@@ -81,13 +87,6 @@ export const ArrayObjForm = ({ sectionName }: Props) => {
                     </div>
                 ))}
             </div>
-
-            <button
-                onClick={() => addGeneralInfoField(sectionName)}
-                className="bg-blue-600 hover:bg-blue-700 mt-2 cursor-pointer rounded-xl px-4 py-2 text-white transition-colors"
-            >
-                Add field
-            </button>
         </div>
     );
 };
