@@ -50,7 +50,7 @@ chmod +x $RELEASE_DIR/adj-valet/adj-valet-backend
 
 cp -r adj-valet-front/dist $RELEASE_DIR/adj-valet/web
 cp README.md $RELEASE_DIR/adj-valet/
-cp adj/README.md $RELEASE_DIR/adj-valet/ADJ-SPEC.md
+# cp adj/README.md $RELEASE_DIR/adj-valet/ADJ-SPEC.md
 
 # Create startup script
 cat > $RELEASE_DIR/adj-valet/start.sh << 'EOF'

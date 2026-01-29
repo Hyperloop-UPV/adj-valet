@@ -1,0 +1,96 @@
+name: Build Release for All Targets
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+          - x86_64-pc-windows-gnu
+    env:
+      VERSION: ${{ github.ref_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y build-essential pkg-config libssl-dev
+
+      - name: Install frontend dependencies
+        run: |
+          cd adj-valet-front
+          npm ci
+
+      - name: Build frontend
+        run: |
+          cd adj-valet-front
+          npm run build
+
+      - name: Build backend
+        run: |
+          rustup target add ${{ matrix.target }}
+          cargo build --release --target ${{ matrix.target }} --manifest-path backend/Cargo.toml
+
+      - name: Prepare release directory
+        run: |
+          rm -rf release
+          mkdir -p release/adj-valet
+          cp backend/target/${{ matrix.target }}/release/backend release/adj-valet/adj-valet-backend
+          chmod +x release/adj-valet/adj-valet-backend
+          cp -r adj-valet-front/dist release/adj-valet/web
+          cp README.md release/adj-valet/
+          cat > release/adj-valet/start.sh << 'EOF'
+          #!/bin/bash
+          cd "$(dirname "$0")"
+          echo "Starting ADJ Valet..."
+          echo "Backend will be available at http://localhost:8000"
+          echo "Opening web interface..."
+          ./adj-valet-backend --port 8000 &
+          BACKEND_PID=$!
+          sleep 2
+          if command -v xdg-open > /dev/null; then
+            xdg-open "file://$(pwd)/web/index.html"
+          elif command -v open > /dev/null; then
+            open "file://$(pwd)/web/index.html"
+          else
+            echo "Please open file://$(pwd)/web/index.html in your browser"
+          fi
+          echo "Press Ctrl+C to stop the server"
+          wait $BACKEND_PID
+          EOF
+          chmod +x release/adj-valet/start.sh
+
+      - name: Create tarball
+        run: |
+          cd release
+          tar czf adj-valet-${{ env.VERSION }}-${{ matrix.target }}.tar.gz adj-valet/
+          cd ..
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: adj-valet-${{ env.VERSION }}-${{ matrix.target }}.tar.gz
+          path: release/adj-valet-${{ env.VERSION }}-${{ matrix.target }}.tar.gz
+          if-no-files-found: error
