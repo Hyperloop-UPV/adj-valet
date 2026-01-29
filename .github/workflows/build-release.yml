@@ -1,7 +1,5 @@
 name: Build Release for All Targets
 
-name: Build Release for All Targets
-
 on:
   workflow_dispatch:
   push:
