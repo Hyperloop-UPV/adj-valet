@@ -136,10 +136,14 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
                         >
                             <option value="float32">float32</option>
                             <option value="float64">float64</option>
+                            <option value="uint8">uint8</option>
                             <option value="uint16">uint16</option>
                             <option value="uint32">uint32</option>
+                            <option value="uint64">uint64</option>
+                            <option value="int8">int8</option>
                             <option value="int16">int16</option>
                             <option value="int32">int32</option>
+                            <option value="int64">int64</option>
                             <option value="bool">bool</option>
                             <option value="enum">enum</option>
                         </select>
