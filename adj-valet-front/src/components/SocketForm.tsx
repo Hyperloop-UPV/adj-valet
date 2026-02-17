@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useADJActions, useADJState } from '../store/ADJStore';
 import { Socket, SocketType } from '../types/Socket';
-import { Input } from './Input';
+import { Input as FieldInput } from './Input';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 interface Props {
     boardName: string;
@@ -143,7 +146,7 @@ export const SocketForm = ({
         <div>
             <div className="flex flex-col rounded-xl p-4">
                 <form onSubmit={handleSubmit}>
-                    <Input
+                    <FieldInput
                         object={formData}
                         field={'name'}
                         setObject={(field, value) =>
@@ -153,7 +156,7 @@ export const SocketForm = ({
                     />
 
                     <div className="mt-4">
-                        <label className="text-zinc-600">Type</label>
+                        <Label>Type</Label>
                         <select
                             value={formData.type}
                             onChange={(e) =>
@@ -162,7 +165,7 @@ export const SocketForm = ({
                                     type: e.target.value as SocketType,
                                 }))
                             }
-                            className="focus:border-hupv-blue mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-600 focus:outline-none"
+                            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                             {SOCKET_TYPES.map((type) => (
                                 <option key={type} value={type}>
@@ -175,8 +178,8 @@ export const SocketForm = ({
                     {(formData.type === 'ServerSocket' ||
                         formData.type === 'DatagramSocket') && (
                         <div className="mt-4">
-                            <label className="text-zinc-600">Port</label>
-                            <input
+                            <Label>Port</Label>
+                            <Input
                                 type="number"
                                 value={formData.port ?? ''}
                                 onChange={(e) =>
@@ -188,15 +191,14 @@ export const SocketForm = ({
                                     )
                                 }
                                 placeholder="e.g. 50500"
-                                className="focus:border-hupv-blue mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-600 focus:outline-none"
                             />
                         </div>
                     )}
 
                     {formData.type === 'Socket' && (
                         <div className="mt-4">
-                            <label className="text-zinc-600">Local Port</label>
-                            <input
+                            <Label>Local Port</Label>
+                            <Input
                                 type="number"
                                 value={formData.local_port ?? ''}
                                 onChange={(e) =>
@@ -208,7 +210,6 @@ export const SocketForm = ({
                                     )
                                 }
                                 placeholder="e.g. 50501"
-                                className="focus:border-hupv-blue mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-600 focus:outline-none"
                             />
                         </div>
                     )}
@@ -216,8 +217,8 @@ export const SocketForm = ({
                     {(formData.type === 'DatagramSocket' ||
                         formData.type === 'Socket') && (
                         <div className="mt-4">
-                            <label className="text-zinc-600">Remote IP</label>
-                            <input
+                            <Label>Remote IP</Label>
+                            <Input
                                 type="text"
                                 value={formData.remote_ip || ''}
                                 onChange={(e) =>
@@ -227,15 +228,14 @@ export const SocketForm = ({
                                     )
                                 }
                                 placeholder="e.g. 192.168.1.5"
-                                className="focus:border-hupv-blue mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-600 focus:outline-none"
                             />
                         </div>
                     )}
 
                     {formData.type === 'Socket' && (
                         <div className="mt-4">
-                            <label className="text-zinc-600">Remote Port</label>
-                            <input
+                            <Label>Remote Port</Label>
+                            <Input
                                 type="number"
                                 value={formData.remote_port ?? ''}
                                 onChange={(e) =>
@@ -247,30 +247,28 @@ export const SocketForm = ({
                                     )
                                 }
                                 placeholder="e.g. 50500"
-                                className="focus:border-hupv-blue mt-1 w-full rounded-lg border border-zinc-300 px-3 py-2 text-zinc-600 focus:outline-none"
                             />
                         </div>
                     )}
 
-                    <div className="flex gap-4">
+                    <div className="flex gap-3">
                         {!isCreating && (
-                            <button
+                            <Button
                                 type="button"
-                                className="mt-4 w-fit cursor-pointer rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+                                variant="destructive"
                                 onClick={() => {
                                     removeSocket(boardName, socket.name);
                                     onSubmit();
                                 }}
                             >
-                                <i className="fa-solid fa-trash"></i>
-                            </button>
+                                Delete
+                            </Button>
                         )}
-                        <button
+                        <Button
                             type="submit"
-                            className="bg-hupv-orange/90 hover:bg-hupv-orange mt-4 w-full cursor-pointer rounded-lg px-4 py-2 text-white"
                         >
                             Save Changes
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </div>

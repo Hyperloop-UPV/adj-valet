@@ -7,6 +7,7 @@ import { Measurement } from '../types/Measurement';
 import { Packet } from '../types/Packet';
 import { Socket } from '../types/Socket';
 import { apiClient } from '../api/api';
+import { demoConfig } from '../utils/demoConfig';
 
 export interface AppState {
     isLoading: boolean;
@@ -24,6 +25,7 @@ export interface AppActions {
 
     loadConfig: (path?: string) => Promise<void>;
     saveConfig: () => Promise<void>;
+    loadDemoConfig: () => void;
 
     updateBoard: (
         boardName: BoardName,
@@ -121,6 +123,7 @@ export const useADJStore = create<ADJStore>()(
                         state.adjPath = null;
                         state.config = null;
                         localStorage.removeItem('adj_path');
+                        localStorage.removeItem('adj_demo');
                     }),
 
                 loadConfig: async (path?: string) => {
@@ -209,6 +212,16 @@ export const useADJStore = create<ADJStore>()(
                         setLoading(false);
                     }
                 },
+
+                loadDemoConfig: () =>
+                    set((state) => {
+                        state.isLoading = false;
+                        state.error = null;
+                        state.adjPath = 'demo';
+                        state.config = demoConfig;
+                        localStorage.setItem('adj_demo', 'true');
+                        localStorage.setItem('adj_path', 'demo');
+                    }),
 
                 updateBoard: (
                     boardName: BoardName,
@@ -585,6 +598,7 @@ export const useADJActions = () => {
         resetState,
         loadConfig,
         saveConfig,
+        loadDemoConfig,
         updateBoard,
         addBoard,
         removeBoard,
@@ -610,6 +624,7 @@ export const useADJActions = () => {
         resetState,
         loadConfig,
         saveConfig,
+        loadDemoConfig,
         updateBoard,
         addBoard,
         removeBoard,

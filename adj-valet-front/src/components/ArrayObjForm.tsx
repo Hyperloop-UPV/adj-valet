@@ -1,5 +1,9 @@
 import { useADJState, useADJActions } from '../store/ADJStore';
 import { useState } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 
 interface Props {
     sectionName: string;
@@ -48,45 +52,46 @@ export const ArrayObjForm = ({ sectionName }: Props) => {
     };
 
     return (
-        <div className="bg-gray-100/20 rounded-lg border-1 border-gray-100/30 p-6 min-w-80 max-h-[calc(100vh-12rem)] overflow-y-auto">
-            <span className="mb-5 flex flex-row justify-between items-center w-full">
-            <h2 className="text-xl font-bold text-gray-800 capitalize">{sectionName.replace(/_/g, ' ')}</h2>
-                        <button
-                onClick={() => addGeneralInfoField(sectionName)}
-                className="bg-blue-600 hover:bg-blue-700 cursor-pointer p-1 w-8 h-8 rounded-full text-white transition-colors"
-            ><i className="fa-solid fa-plus w-4 h-4"></i></button>
-            </span>
-
-            <div className="space-y-3">
+        <Card className="min-w-80 max-h-[calc(100vh-12rem)] overflow-hidden">
+            <CardHeader className="flex-row items-center justify-between">
+                <CardTitle className="capitalize">
+                    {sectionName.replace(/_/g, ' ')}
+                </CardTitle>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => addGeneralInfoField(sectionName)}
+                >
+                    <Plus className="h-4 w-4" />
+                </Button>
+            </CardHeader>
+            <CardContent className="space-y-3 overflow-y-auto pb-4">
                 {Object.entries(
                     config.general_info[sectionName] as Record<string, unknown>,
                 ).map(([key, value]) => (
-                    <div key={key} className="flex gap-2 items-center min-w-0">
-                        <input
-                            type="text"
+                    <div key={key} className="grid min-w-0 grid-cols-[1fr_1fr_56px] gap-3 items-center">
+                        <Input
                             value={editingKeys[key] ?? key}
                             onChange={(e) => handleKeyChange(key, e.target.value)}
                             onBlur={() => handleKeyBlur(key)}
-                            className="flex-1 min-w-0 border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm"
                             placeholder="Field name"
                         />
-                        <input
-                            type="text"
+                        <Input
                             value={String(value)}
                             onChange={(e) => handleValueChange(key, e.target.value)}
-                            className="flex-1 min-w-0 border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 text-sm"
                             placeholder="Value"
                         />
                         <button
+                            type="button"
                             onClick={() => removeGeneralInfoField(sectionName, key)}
-                            className="flex-shrink-0 p-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
                             title="Remove field"
+                            className="inline-flex h-11 w-14 items-center justify-center rounded-xl bg-destructive text-destructive-foreground shadow-sm transition-colors hover:bg-destructive/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
-                            <i className="fa-solid fa-trash text-sm"></i>
+                            <Trash2 className="h-4 w-4" />
                         </button>
                     </div>
                 ))}
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 };

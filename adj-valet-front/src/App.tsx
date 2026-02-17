@@ -3,12 +3,17 @@ import { Content } from './layout/Content';
 import { Sidebar } from './layout/Sidebar';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { useADJState, useADJActions } from './store/ADJStore';
+import { AppTopBar } from './components/AppTopBar';
+import { SetupScreen } from './components/SetupScreen';
 
 function App() {
   const { isLoading, error, adjPath, config } = useADJState();
-  const { loadConfig, setError, resetState } = useADJActions();
+  const { loadConfig, setError, resetState, loadDemoConfig } = useADJActions();
   const [selectedSection, setSelectedSection] = useState('general_info');
   const [pathInput, setPathInput] = useState('');
+  const demoMode =
+    new URLSearchParams(window.location.search).get('demo') === '1' ||
+    localStorage.getItem('adj_demo') === 'true';
 
   // Debug logging
   useEffect(() => {
@@ -25,120 +30,35 @@ function App() {
   };
 
   useEffect(() => {
-    // Try to load config on mount, even if we don't have a stored path
+    if (demoMode && !config) {
+      loadDemoConfig();
+      return;
+    }
     if (!config && !isLoading && !error) {
       console.log('Attempting to load config on mount');
       loadConfig().catch((error) => {
         console.error('Failed to load config:', error);
-        // The error will be set by loadConfig
       });
     }
   }, []); // Only run on mount
 
-  // Show the setup form if no adjPath OR if there's an error loading config
   const shouldShowSetup = !adjPath || (error && !config);
 
   if (shouldShowSetup) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">ADJ Valet</h1>
-        <p className="text-gray-600">
-          {adjPath && error ? 'The cached ADJ path is no longer valid. Please enter a new path:' : 
-           adjPath ? 'Failed to load configuration. Enter a new path:' : 
-           'Enter the path to your ADJ directory to get started'}
-        </p>
-        
-        {adjPath && (
-          <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-2 rounded-lg max-w-md w-full">
-            <p className="text-sm">
-              {error ? 'Invalid cached path:' : 'Previous path:'} 
-              <code className="bg-yellow-100 px-1 rounded ml-1">{adjPath}</code>
-            </p>
-            <div className="flex gap-2 mt-2">
-              <button 
-                onClick={() => setPathInput(adjPath)}
-                className="text-xs text-yellow-600 hover:text-yellow-800 underline"
-              >
-                Use this path again
-              </button>
-              <span className="text-xs text-yellow-400">•</span>
-              <button 
-                onClick={resetState}
-                className="text-xs text-yellow-600 hover:text-yellow-800 underline"
-              >
-                Clear and start fresh
-              </button>
-            </div>
-          </div>
-        )}
-        
-        <div className="flex flex-col gap-4 w-full max-w-md">
-          <input
-            type="text"
-            placeholder="Enter ADJ directory path..."
-            className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            value={pathInput}
-            onChange={(e) => setPathInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleLoadConfig()}
-            disabled={isLoading}
-          />
-          
-          <div className="flex gap-2">
-            <button
-              className={`flex-1 px-6 py-2 rounded-lg font-medium text-white transition-colors ${
-                isLoading || !pathInput.trim()
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
-              }`}
-              onClick={handleLoadConfig}
-              disabled={isLoading || !pathInput.trim()}
-            >
-              {isLoading ? 'Loading...' : 'Load Configuration'}
-            </button>
-            
-            <button
-              className="px-4 py-2 rounded-lg font-medium text-gray-600 bg-gray-200 hover:bg-gray-300 transition-colors"
-              onClick={() => {
-                resetState();
-                setPathInput('');
-                console.log('Cache cleared');
-              }}
-              disabled={isLoading}
-              title="Clear all cached data and start fresh"
-            >
-              Clear Cache
-            </button>
-          </div>
-        </div>
-
-        {isLoading && (
-          <div className="flex items-center gap-2">
-            <LoadingSpinner />
-            <span className="text-gray-600">Loading ADJ configuration...</span>
-          </div>
-        )}
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg max-w-md w-full">
-            <div className="flex items-center gap-2">
-              <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <span className="font-medium">Error:</span>
-            </div>
-            <p className="mt-1">{error}</p>
-            <details className="mt-2">
-              <summary className="text-sm cursor-pointer hover:underline">Troubleshooting</summary>
-              <ul className="text-sm mt-1 ml-4 list-disc">
-                <li>Make sure the backend is running</li>
-                <li>Check that the ADJ directory path exists</li>
-                <li>Verify the ADJ directory contains valid configuration files</li>
-                <li>Check browser console for more details</li>
-              </ul>
-            </details>
-          </div>
-        )}
-      </div>
+      <SetupScreen
+        adjPath={adjPath}
+        error={error}
+        isLoading={isLoading}
+        pathInput={pathInput}
+        setPathInput={setPathInput}
+        onLoadConfig={handleLoadConfig}
+        onReset={() => {
+          resetState();
+          setPathInput('');
+        }}
+        onLoadDemo={loadDemoConfig}
+      />
     );
   }
 
@@ -170,29 +90,26 @@ function App() {
         selectedSection={selectedSection}
         onSelectedSection={setSelectedSection}
       />
-      <Content
-        selectedSection={selectedSection}
-        setSelectedSection={setSelectedSection}
-      />
-      
+      <div className="flex min-w-0 flex-1 flex-col">
+        <AppTopBar />
+        <Content
+          selectedSection={selectedSection}
+          setSelectedSection={setSelectedSection}
+        />
+      </div>
+
       {isLoading && (
-        <div className="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-3 border border-gray-200">
-          <div className="flex items-center gap-2">
+        <div className="fixed right-6 top-6 rounded-lg border border-border bg-card px-3 py-2 shadow-sm">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <LoadingSpinner />
-            <span className="text-sm text-gray-600">Saving...</span>
+            Saving changes...
           </div>
         </div>
       )}
-      
+
       {error && (
-        <div className="fixed top-4 right-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg shadow-lg max-w-sm">
-          <div className="flex items-center gap-2">
-            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            <span className="font-medium text-sm">Error</span>
-          </div>
-          <p className="mt-1 text-sm">{error}</p>
+        <div className="fixed right-6 top-20 max-w-sm rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive shadow-sm">
+          {error}
         </div>
       )}
     </div>

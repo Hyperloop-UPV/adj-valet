@@ -1,24 +1,34 @@
 
+import { cn } from '../lib/utils';
+
 interface Props {
     title: string | React.ReactNode;
     isSelected?: boolean;
     onClick?: () => void;
-}  
+    className?: string;
+}
 
-export const Button = ({ title, isSelected, onClick }: Props) => (
-    <div
-        className={`w-full p-1 cursor-pointer rounded-lg bg-gray-200/50 hover:bg-gray-300/70 transition-colors ${isSelected ? 'bg-orange-300/60' : ''}`}
+export const Button = ({ title, isSelected, onClick, className }: Props) => (
+    <button
+        type="button"
         onClick={onClick}
+        className={cn(
+            'flex w-full items-center gap-3 rounded-lg border border-transparent px-3 py-2 text-left text-sm font-medium transition-all',
+            'hover:bg-muted/80',
+            isSelected
+                ? 'border-border bg-card shadow-sm'
+                : 'text-muted-foreground',
+            className,
+        )}
     >
-        <div className="flex h-full items-center gap-2 px-4">
-            {isSelected && (
-                <i className="fa-solid fa-caret-right text-orange-600"></i>
+        <span
+            className={cn(
+                'h-2 w-2 rounded-full',
+                isSelected ? 'bg-primary' : 'bg-muted-foreground/40',
             )}
-            <div
-                className={`text-lg font-semibold ${isSelected ? 'text-orange-600' : 'text-black'}`}
-            >
-                {title}
-            </div>
-        </div>
-    </div>
+        />
+        <span className={cn('flex-1', isSelected && 'text-foreground')}>
+            {title}
+        </span>
+    </button>
 );

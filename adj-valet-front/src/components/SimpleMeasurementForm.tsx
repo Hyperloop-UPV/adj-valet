@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useADJActions } from '../store/ADJStore';
 import { Measurement } from '../types/Measurement';
 import { BoardName } from '../types/Board';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 interface Props {
     boardName: BoardName;
@@ -106,33 +109,31 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
             <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 pr-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">ID</label>
-                        <input
+                        <Label>ID</Label>
+                        <Input
                             type="text"
                             value={formData.id}
                             onChange={(e) => handleFieldChange('id', e.target.value)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                        <input
+                        <Label>Name</Label>
+                        <Input
                             type="text"
                             value={formData.name}
                             onChange={(e) => handleFieldChange('name', e.target.value)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                             required
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                        <Label>Type</Label>
                         <select
                             value={formData.type}
                             onChange={(e) => handleFieldChange('type', e.target.value)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                             <option value="float32">float32</option>
                             <option value="float64">float64</option>
@@ -152,22 +153,20 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
                     {formData.type !== 'enum' && (
                         <>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Pod Units</label>
-                                <input
+                                <Label>Pod Units</Label>
+                                <Input
                                     type="text"
                                     value={formData.podUnits}
                                     onChange={(e) => handleFieldChange('podUnits', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Display Units</label>
-                                <input
+                                <Label>Display Units</Label>
+                                <Input
                                     type="text"
                                     value={formData.displayUnits}
                                     onChange={(e) => handleFieldChange('displayUnits', e.target.value)}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                 />
                             </div>
                         </>
@@ -176,14 +175,13 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
 
                 {formData.type === 'enum' && (
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Enum Values (comma-separated)</label>
-                        <input
+                        <Label>Enum Values (comma-separated)</Label>
+                        <Input
                             type="text"
                             value={enumInputValue}
                             onChange={(e) => handleEnumValuesChange(e.target.value)}
                             onBlur={(e) => processEnumValues(e.target.value)}
                             placeholder="Value1, Value2, Value3"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                         />
                     </div>
                 )}
@@ -197,31 +195,29 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
                                     id="hasSafeRange"
                                     checked={hasSafeRange}
                                     onChange={(e) => handleSafeRangeToggle(e.target.checked)}
-                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                                 />
-                                <label htmlFor="hasSafeRange" className="text-sm font-medium text-gray-700">Safe Range</label>
+                                <Label htmlFor="hasSafeRange">Safe Range</Label>
                             </div>
                             {hasSafeRange && (
                                 <div className="grid grid-cols-2 gap-2 ml-6">
                                     <div>
-                                        <input
+                                        <Input
                                             type="number"
                                             step="any"
                                             value={formData.safeRange?.[0] ?? ''}
                                             onChange={(e) => handleRangeChange('safeRange', 0, e.target.value)}
                                             placeholder="Min"
-                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                         />
                                         <span className="text-xs text-gray-500 mt-1 block">Minimum</span>
                                     </div>
                                     <div>
-                                        <input
+                                        <Input
                                             type="number"
                                             step="any"
                                             value={formData.safeRange?.[1] ?? ''}
                                             onChange={(e) => handleRangeChange('safeRange', 1, e.target.value)}
                                             placeholder="Max"
-                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                         />
                                         <span className="text-xs text-gray-500 mt-1 block">Maximum</span>
                                     </div>
@@ -236,31 +232,29 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
                                     id="hasWarningRange"
                                     checked={hasWarningRange}
                                     onChange={(e) => handleWarningRangeToggle(e.target.checked)}
-                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
                                 />
-                                <label htmlFor="hasWarningRange" className="text-sm font-medium text-gray-700">Warning Range</label>
+                                <Label htmlFor="hasWarningRange">Warning Range</Label>
                             </div>
                             {hasWarningRange && (
                                 <div className="grid grid-cols-2 gap-2 ml-6">
                                     <div>
-                                        <input
+                                        <Input
                                             type="number"
                                             step="any"
                                             value={formData.warningRange?.[0] ?? ''}
                                             onChange={(e) => handleRangeChange('warningRange', 0, e.target.value)}
                                             placeholder="Min"
-                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                         />
                                         <span className="text-xs text-gray-500 mt-1 block">Minimum</span>
                                     </div>
                                     <div>
-                                        <input
+                                        <Input
                                             type="number"
                                             step="any"
                                             value={formData.warningRange?.[1] ?? ''}
                                             onChange={(e) => handleRangeChange('warningRange', 1, e.target.value)}
                                             placeholder="Max"
-                                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                                         />
                                         <span className="text-xs text-gray-500 mt-1 block">Maximum</span>
                                     </div>
@@ -272,31 +266,30 @@ export const SimpleMeasurementForm = ({ boardName, measurement, isCreating, onSu
 
             </form>
 
-            <div className="flex justify-end gap-3 pt-4 bg-white flex-shrink-0">
+            <div className="flex justify-end gap-3 pt-4 flex-shrink-0">
                 {!isCreating && (
-                    <button
+                    <Button
                         type="button"
                         onClick={handleDelete}
-                        className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-200 transition-colors"
+                        variant="destructive"
                     >
-                        <i className="fa-solid fa-trash text-lg mr-2"></i> Delete
-                    </button>
+                        Delete
+                    </Button>
                 )}
 
-                <button
+                <Button
                     type="button"
                     onClick={onSubmit}
-                    className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
+                    variant="outline"
                 >
                     Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                     type="submit"
                     onClick={handleSubmit}
-                    className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-colors"
                 >
                     {isCreating ? 'Add Measurement' : 'Update Measurement'}
-                </button>
+                </Button>
             </div>
         </div>
     );

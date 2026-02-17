@@ -1,8 +1,13 @@
 import { useState } from 'react';
+import { X } from 'lucide-react';
 import { useADJState, useADJActions } from '../store/ADJStore';
 import { Packet } from '../types/Packet';
 import { BoardName } from '../types/Board';
 import { Measurement } from '../types/Measurement';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Badge } from './ui/badge';
 
 interface Props {
     boardName: BoardName;
@@ -110,34 +115,32 @@ export const SimplePacketForm = ({ boardName, packet, isCreating, onSubmit }: Pr
             <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto flex-1 pr-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">ID (optional)</label>
-                        <input
+                        <Label>ID (optional)</Label>
+                        <Input
                             type="number"
                             value={formData.id || ''}
                             onChange={(e) => handleFieldChange('id', e.target.value)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                             placeholder="Leave empty for no ID"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                        <input
+                        <Label>Name</Label>
+                        <Input
                             type="text"
                             value={formData.name}
                             onChange={(e) => handleFieldChange('name', e.target.value)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                             required
                         />
                     </div>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <Label>Type</Label>
                     <select
                         value={formData.type}
                         onChange={(e) => handleFieldChange('type', e.target.value)}
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     >
                         <option value="data">Data (sensor readings, measurements)</option>
                         <option value="order">Order (commands, control instructions)</option>
@@ -146,11 +149,11 @@ export const SimplePacketForm = ({ boardName, packet, isCreating, onSubmit }: Pr
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Socket</label>
+                        <Label>Socket</Label>
                         <select
                             value={formData.socket || ''}
                             onChange={(e) => handleFieldChange('socket', e.target.value || undefined)}
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200"
+                            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                             <option value="">None</option>
                             {availableSockets.map((socket) => (
@@ -165,14 +168,13 @@ export const SimplePacketForm = ({ boardName, packet, isCreating, onSubmit }: Pr
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Period (ms)</label>
-                        <input
+                        <Label>Period (ms)</Label>
+                        <Input
                             type="number"
                             step="0.01"
                             value={formData.period_ms ?? ''}
                             onChange={(e) => handleFieldChange('period_ms', e.target.value ? parseFloat(e.target.value) : undefined)}
                             placeholder="e.g. 16.67"
-                            className="w-full border border-gray-300 rounded-md px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                         />
                         <p className="text-xs text-gray-500 mt-1">
                             Transmission period in milliseconds
@@ -181,7 +183,7 @@ export const SimplePacketForm = ({ boardName, packet, isCreating, onSubmit }: Pr
                 </div>
 
                 <div className="col-span-full">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Variables (Measurements)</label>
+                    <Label>Variables (Measurements)</Label>
                     
                     {/* Selected Variables */}
                     {selectedVariables.length > 0 && (
@@ -189,48 +191,48 @@ export const SimplePacketForm = ({ boardName, packet, isCreating, onSubmit }: Pr
                             <p className="text-xs text-gray-600 mb-1">Selected variables:</p>
                             <div className="flex flex-wrap gap-2">
                                 {selectedVariables.map(variable => (
-                                    <span key={variable} className="inline-flex items-center gap-1 bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm">
+                                    <Badge key={variable} variant="secondary" className="gap-1">
                                         {variable}
                                         <button
                                             type="button"
                                             onClick={() => removeVariable(variable)}
-                                            className="hover:text-green-600"
+                                            className="hover:text-foreground"
                                         >
-                                            <i className="fa-solid fa-xmark text-xs"></i>
+                                            <X className="h-3 w-3" />
                                         </button>
-                                    </span>
+                                    </Badge>
                                 ))}
                             </div>
                         </div>
                     )}
 
                     {/* Search Input */}
-                    <input
+                    <Input
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Search measurements..."
-                        className="w-full border border-gray-300 rounded-md px-3 py-2 mb-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        className="mb-2"
                     />
 
                     {/* Scrollable Measurement List */}
-                    <div className="border border-gray-300 rounded-md max-h-48 overflow-y-auto">
+                    <div className="border border-border rounded-md max-h-48 overflow-y-auto">
                         {filteredMeasurements.length > 0 ? (
-                            <div className="divide-y divide-gray-200">
+                            <div className="divide-y divide-border">
                                 {filteredMeasurements.map(({ measurement, boardName }) => {
                                     const isSelected = selectedVariables.includes(measurement.id);
                                     return (
                                         <label
                                             key={`${boardName}-${measurement.id}`}
-                                            className={`flex items-center p-3 hover:bg-gray-50 cursor-pointer ${
-                                                isSelected ? 'bg-green-50' : ''
+                                            className={`flex items-center p-3 hover:bg-muted cursor-pointer ${
+                                                isSelected ? 'bg-accent' : ''
                                             }`}
                                         >
                                             <input
                                                 type="checkbox"
                                                 checked={isSelected}
                                                 onChange={() => toggleVariable(measurement.id)}
-                                                className="mr-3 h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                                className="mr-3 h-4 w-4 rounded border-border text-primary focus:ring-primary"
                                             />
                                             <div className="flex-1">
                                                 <div className="font-medium text-sm">{measurement.name}</div>
@@ -255,31 +257,30 @@ export const SimplePacketForm = ({ boardName, packet, isCreating, onSubmit }: Pr
 
             </form>
 
-            <div className="flex justify-end gap-3 pt-4 bg-white flex-shrink-0">
+            <div className="flex justify-end gap-3 pt-4 flex-shrink-0">
                 {!isCreating && (
-                    <button
+                    <Button
                         type="button"
                         onClick={handleDelete}
-                        className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-200 transition-colors"
+                        variant="destructive"
                     >
-                        <i className="fa-solid fa-trash text-lg mr-2"></i> Delete
-                    </button>
+                        Delete
+                    </Button>
                 )}
 
-                <button
+                <Button
                     type="button"
                     onClick={onSubmit}
-                    className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-200 transition-colors"
+                    variant="outline"
                 >
                     Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                     type="submit"
                     onClick={handleSubmit}
-                    className="inline-flex items-center justify-center h-11 min-w-[52px] rounded-md px-3 py-2 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-emerald-200 transition-colors"
                 >
                     {isCreating ? 'Add Packet' : 'Update Packet'}
-                </button>
+                </Button>
             </div>
         </div>
     );

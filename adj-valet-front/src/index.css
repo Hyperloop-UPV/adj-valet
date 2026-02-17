@@ -1,9 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 html, body {
     height: 100%;
     margin: 0;
-} 
+}
 
 #root {
     height: 100%;
@@ -16,4 +17,36 @@ html, body {
     --shadow-small: 8px 8px 8px 0px rgba(0, 0, 0, 0.1);
     --shadow-medium: 10px 10px 8px 0px rgba(0, 0, 0, 0.1);
     --shadow-large: 12px 12px 8px 0px rgba(0, 0, 0, 0.1);
+
+    --radius: 0.9rem;
+
+    --color-background: #f6f5f1;
+    --color-foreground: #1c1d1e;
+    --color-card: #ffffff;
+    --color-card-foreground: #1c1d1e;
+    --color-popover: #ffffff;
+    --color-popover-foreground: #1c1d1e;
+    --color-primary: #ff7a1a;
+    --color-primary-foreground: #fff6ee;
+    --color-secondary: #e9ece9;
+    --color-secondary-foreground: #1e2a24;
+    --color-muted: #f0f2ee;
+    --color-muted-foreground: #6d756f;
+    --color-accent: #e3f1f1;
+    --color-accent-foreground: #184344;
+    --color-border: #e3e4df;
+    --color-input: #e7e7e1;
+    --color-ring: #ff9a4a;
+    --color-destructive: #e5484d;
+    --color-destructive-foreground: #fff5f5;
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+        font-family: 'Space Grotesk', 'Trebuchet MS', 'Segoe UI', sans-serif;
+    }
 }
