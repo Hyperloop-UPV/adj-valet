@@ -27,7 +27,14 @@ export const SimpleBoardForm = ({
     setSelectedSection,
 }: Props) => {
     const { config } = useADJState();
-    const { updateBoard, addBoard, removeBoard, removeMeasurement, removePacket, removeSocket } = useADJActions();
+    const {
+        updateBoard,
+        addBoard,
+        removeBoard,
+        removeMeasurement,
+        removePacket,
+        removeSocket,
+    } = useADJActions();
 
     // Get the current board info directly from the store instead of relying on props
     const currentBoardInfo =
@@ -160,12 +167,14 @@ export const SimpleBoardForm = ({
     const sockets = localBoardInfo.sockets || [];
 
     return (
-        <div className="flex h-full w-full flex-col">
+        <div className="flex h-full w-auto flex-col">
             <div className="flex flex-wrap items-center justify-between gap-4 px-6 pt-6">
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                         <Badge variant="secondary">Board</Badge>
-                        <Badge variant="outline">ID {localBoardInfo.board_id}</Badge>
+                        <Badge variant="outline">
+                            ID {localBoardInfo.board_id}
+                        </Badge>
                     </div>
                     {isEditingName ? (
                         <div className="flex items-center gap-2">
@@ -221,13 +230,13 @@ export const SimpleBoardForm = ({
                 <Card className="max-h-[calc(100vh-8rem)] overflow-hidden">
                     <CardHeader className="flex-row items-center justify-between">
                         <CardTitle className="flex items-center gap-2">
-                            <Hash className="h-4 w-4 text-muted-foreground" />
+                            <Hash className="text-muted-foreground h-4 w-4" />
                             General
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 overflow-y-auto pb-4">
                         <div className="space-y-1">
-                            <label className="text-xs text-muted-foreground">
+                            <label className="text-muted-foreground text-xs">
                                 Board ID
                             </label>
                             <Input
@@ -240,7 +249,7 @@ export const SimpleBoardForm = ({
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-xs text-muted-foreground">
+                            <label className="text-muted-foreground text-xs">
                                 Board IP Address
                             </label>
                             <Input
@@ -253,22 +262,22 @@ export const SimpleBoardForm = ({
                             />
                         </div>
 
-                        <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+                        <div className="border-border bg-muted/40 text-muted-foreground rounded-lg border p-3 text-xs">
                             <div className="flex justify-between">
                                 <span>Measurements</span>
-                                <span className="font-semibold text-foreground">
+                                <span className="text-foreground font-semibold">
                                     {localBoardInfo.measurements.length}
                                 </span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Packets</span>
-                                <span className="font-semibold text-foreground">
+                                <span className="text-foreground font-semibold">
                                     {localBoardInfo.packets.length}
                                 </span>
                             </div>
                             <div className="flex justify-between">
                                 <span>Sockets</span>
-                                <span className="font-semibold text-foreground">
+                                <span className="text-foreground font-semibold">
                                     {sockets.length}
                                 </span>
                             </div>
@@ -282,7 +291,7 @@ export const SimpleBoardForm = ({
                     onAdd={handleAddMeasurement}
                     hasItems={localBoardInfo.measurements.length > 0}
                     emptyState={
-                        <div className="rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                        <div className="border-border text-muted-foreground rounded-lg border border-dashed p-6 text-center text-xs">
                             No measurements configured yet.
                         </div>
                     }
@@ -290,18 +299,18 @@ export const SimpleBoardForm = ({
                     {localBoardInfo.measurements.map((measurement, index) => (
                         <div
                             key={index}
-                            className="flex cursor-pointer items-center justify-between rounded-lg border border-border bg-muted/30 p-3 transition-colors hover:bg-muted"
+                            className="border-border bg-muted/30 hover:bg-muted flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors"
                             onClick={() => handleMeasurementClick(measurement)}
                         >
                             <div>
                                 <div className="text-sm font-semibold">
                                     {measurement.name}
                                 </div>
-                                <div className="text-xs text-muted-foreground">
+                                <div className="text-muted-foreground text-xs">
                                     Type {measurement.type}
                                 </div>
                             </div>
-                            <div className="text-right text-xs text-muted-foreground">
+                            <div className="text-muted-foreground text-right text-xs">
                                 <div>ID {measurement.id}</div>
                                 <div>
                                     {measurement.displayUnits || 'No units'}
@@ -317,7 +326,7 @@ export const SimpleBoardForm = ({
                     onAdd={handleAddPacket}
                     hasItems={localBoardInfo.packets.length > 0}
                     emptyState={
-                        <div className="rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                        <div className="border-border text-muted-foreground rounded-lg border border-dashed p-6 text-center text-xs">
                             No packets configured yet.
                         </div>
                     }
@@ -325,18 +334,18 @@ export const SimpleBoardForm = ({
                     {localBoardInfo.packets.map((packet, index) => (
                         <div
                             key={index}
-                            className="flex cursor-pointer items-center justify-between rounded-lg border border-border bg-muted/30 p-3 transition-colors hover:bg-muted"
+                            className="border-border bg-muted/30 hover:bg-muted flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors"
                             onClick={() => handlePacketClick(packet)}
                         >
                             <div>
                                 <div className="text-sm font-semibold">
                                     {packet.name}
                                 </div>
-                                <div className="text-xs text-muted-foreground">
+                                <div className="text-muted-foreground text-xs">
                                     Type {packet.type}
                                 </div>
                             </div>
-                            <div className="text-right text-xs text-muted-foreground">
+                            <div className="text-muted-foreground text-right text-xs">
                                 <div>
                                     {packet.id ? `ID ${packet.id}` : 'No ID'}
                                 </div>
@@ -352,7 +361,7 @@ export const SimpleBoardForm = ({
                     onAdd={handleAddSocket}
                     hasItems={sockets.length > 0}
                     emptyState={
-                        <div className="rounded-lg border border-dashed border-border p-6 text-center text-xs text-muted-foreground">
+                        <div className="border-border text-muted-foreground rounded-lg border border-dashed p-6 text-center text-xs">
                             No sockets configured yet.
                         </div>
                     }
@@ -360,18 +369,18 @@ export const SimpleBoardForm = ({
                     {sockets.map((socket, index) => (
                         <div
                             key={index}
-                            className="flex cursor-pointer items-center justify-between rounded-lg border border-border bg-muted/30 p-3 transition-colors hover:bg-muted"
+                            className="border-border bg-muted/30 hover:bg-muted flex cursor-pointer items-center justify-between rounded-lg border p-3 transition-colors"
                             onClick={() => handleSocketClick(socket)}
                         >
                             <div>
                                 <div className="text-sm font-semibold">
                                     {socket.name || 'Unnamed'}
                                 </div>
-                                <div className="text-xs text-muted-foreground">
+                                <div className="text-muted-foreground text-xs">
                                     Type {socket.type}
                                 </div>
                             </div>
-                            <div className="text-right text-xs text-muted-foreground">
+                            <div className="text-muted-foreground text-right text-xs">
                                 <div>
                                     {socket.port
                                         ? `Port ${socket.port}`
@@ -392,12 +401,22 @@ export const SimpleBoardForm = ({
                 onClose={closeModals}
                 title={selectedMeasurement?.name || 'Measurement'}
                 onDelete={
-                    selectedMeasurement && !localBoardInfo.measurements.some((m) => m.id === selectedMeasurement.id)
+                    selectedMeasurement &&
+                    !localBoardInfo.measurements.some(
+                        (m) => m.id === selectedMeasurement.id,
+                    )
                         ? undefined
                         : () => {
                               if (!selectedMeasurement) return;
-                              if (confirm(`Delete measurement ${selectedMeasurement.name}? This cannot be undone.`)) {
-                                  removeMeasurement(boardName, selectedMeasurement.id);
+                              if (
+                                  confirm(
+                                      `Delete measurement ${selectedMeasurement.name}? This cannot be undone.`,
+                                  )
+                              ) {
+                                  removeMeasurement(
+                                      boardName,
+                                      selectedMeasurement.id,
+                                  );
                                   closeModals();
                               }
                           }
@@ -424,16 +443,28 @@ export const SimpleBoardForm = ({
                 onClose={closeModals}
                 title={selectedPacket?.name || 'Packet'}
                 onDelete={
-                    selectedPacket && !localBoardInfo.packets.some(
+                    selectedPacket &&
+                    !localBoardInfo.packets.some(
                         (p) =>
-                            (p.id && selectedPacket.id && p.id === selectedPacket.id) ||
-                            (!p.id && !selectedPacket.id && p.name === selectedPacket.name),
+                            (p.id &&
+                                selectedPacket.id &&
+                                p.id === selectedPacket.id) ||
+                            (!p.id &&
+                                !selectedPacket.id &&
+                                p.name === selectedPacket.name),
                     )
                         ? undefined
                         : () => {
                               if (!selectedPacket) return;
-                              if (confirm(`Delete packet ${selectedPacket.name}? This cannot be undone.`)) {
-                                  removePacket(boardName, String(selectedPacket.id));
+                              if (
+                                  confirm(
+                                      `Delete packet ${selectedPacket.name}? This cannot be undone.`,
+                                  )
+                              ) {
+                                  removePacket(
+                                      boardName,
+                                      String(selectedPacket.id),
+                                  );
                                   closeModals();
                               }
                           }
@@ -466,11 +497,15 @@ export const SimpleBoardForm = ({
                 onClose={closeModals}
                 title={selectedSocket?.name || 'Socket'}
                 onDelete={
-                    selectedSocket && (selectedSocket.name === '')
+                    selectedSocket && selectedSocket.name === ''
                         ? undefined
                         : () => {
                               if (!selectedSocket) return;
-                              if (confirm(`Delete socket ${selectedSocket.name}? This cannot be undone.`)) {
+                              if (
+                                  confirm(
+                                      `Delete socket ${selectedSocket.name}? This cannot be undone.`,
+                                  )
+                              ) {
                                   removeSocket(boardName, selectedSocket.name);
                                   closeModals();
                               }
