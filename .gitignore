@@ -163,3 +163,9 @@ CLAUDE.md
 # Port files
 backend/.adj-valet-port
 adj-valet-front/public/.adj-valet-port
+frontend/public/.adj-valet-port
+
+# Electron packaging
+/electron/app/
+/dist/electron/
+/tools/

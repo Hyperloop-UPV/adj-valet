@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 BACKEND_DIR="./backend"
-FRONTEND_DIR="./adj-valet-front"
+FRONTEND_DIR="./frontend"
 BACKEND_PORT=8000
 FRONTEND_PORT=5173
 

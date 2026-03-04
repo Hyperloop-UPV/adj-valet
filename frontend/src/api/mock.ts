@@ -52,7 +52,8 @@ export const ADJ_INFO_MOCK: ADJ = {
                         name: "Control Commands",
                         variables: ["start", "stop", "reset"]
                     }
-                ]
+                ],
+                sockets: []
             }
         },
         {
@@ -78,7 +79,8 @@ export const ADJ_INFO_MOCK: ADJ = {
                         name: "Battery Status",
                         variables: ["voltage", "current", "temperature"]
                     }
-                ]
+                ],
+                sockets: []
             }
         },
         {
@@ -104,7 +106,8 @@ export const ADJ_INFO_MOCK: ADJ = {
                         name: "Position Data",
                         variables: ["x", "y", "z"]
                     }
-                ]
+                ],
+                sockets: []
             }
         }
     ]

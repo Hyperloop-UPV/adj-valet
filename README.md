@@ -1,7 +1,7 @@
 # ADJ Valet
 
 <div align="center">
-  <img src="adj-valet-front/src/assets/monkey.svg" alt="ADJ Valet Logo" width="120" />
+  <img src="frontend/src/assets/monkey.svg" alt="ADJ Valet Logo" width="120" />
   
   **A configuration management tool for Hyperloop control systems**
   
@@ -54,7 +54,23 @@ cd adj-valet
 ./run.sh frontend  # Frontend only
 ```
 
-### Option 3: Using Nix Shell
+### Option 3: Build the Electron Desktop App
+
+```bash
+# Install root Electron tooling
+npm install
+
+# Build a desktop package for the current platform
+npm run dist
+```
+
+This produces installers or archives in `dist/electron/` and bundles:
+- the React frontend from `frontend/dist`
+- the Rust backend binary from `backend/target/release`
+
+For repeat rebuilds after frontend or backend changes, see [REBUILD.md](/Users/lola/Sync/Server/hyper/adj-valet/REBUILD.md).
+
+### Option 4: Using Nix Shell
 
 ```bash
 # Enter the Nix development shell
@@ -93,7 +109,7 @@ adj-frontend  # Frontend application only
 
 3. **Install frontend dependencies**
    ```bash
-   cd adj-valet-front
+   cd frontend
    npm install
    cd ..
    ```
@@ -105,7 +121,7 @@ adj-frontend  # Frontend application only
    cargo run -- --port 8000
 
    # Terminal 2 - Frontend
-   cd adj-valet-front
+   cd frontend
    npm run dev
    ```
 
@@ -142,13 +158,15 @@ adj-valet/
 │   │   ├── config.rs    # Configuration management
 │   │   └── error.rs     # Error handling
 │   └── Cargo.toml       # Rust dependencies
-├── adj-valet-front/     # React frontend application
+├── frontend/            # React frontend application
 │   ├── src/
 │   │   ├── components/  # React components
 │   │   ├── store/      # Zustand state management
 │   │   ├── types/      # TypeScript type definitions
 │   │   └── api/        # API client
 │   └── package.json
+├── electron/            # Electron main-process files and staged assets
+├── scripts/             # Desktop packaging helpers
 ├── run.sh              # Application runner script
 ├── shell.nix           # Nix development environment
 └── CLAUDE.md           # AI assistant documentation

@@ -3,7 +3,6 @@ import { Content } from './layout/Content';
 import { Sidebar } from './layout/Sidebar';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { useADJState, useADJActions } from './store/ADJStore';
-import { AppTopBar } from './components/AppTopBar';
 import { SetupScreen } from './components/SetupScreen';
 
 function App() {
@@ -12,6 +11,9 @@ function App() {
         useADJActions();
     const [selectedSection, setSelectedSection] = useState('general_info');
     const [pathInput, setPathInput] = useState('');
+    const canBrowseDirectories =
+        typeof window !== 'undefined' &&
+        typeof window.adjDesktop?.selectDirectory === 'function';
     const demoMode =
         new URLSearchParams(window.location.search).get('demo') === '1' ||
         localStorage.getItem('adj_demo') === 'true';
@@ -33,6 +35,29 @@ function App() {
         }
 
         await loadConfig(pathInput.trim());
+    };
+
+    const handleBrowseDirectory = async () => {
+        if (!canBrowseDirectories) {
+            setError('Directory browsing is only available in the desktop app');
+            return;
+        }
+
+        try {
+            const selectedPath = await window.adjDesktop?.selectDirectory();
+            if (!selectedPath) {
+                return;
+            }
+
+            setPathInput(selectedPath);
+            setError(null);
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : 'Failed to open directory picker';
+            setError(message);
+        }
     };
 
     useEffect(() => {
@@ -58,6 +83,8 @@ function App() {
                 isLoading={isLoading}
                 pathInput={pathInput}
                 setPathInput={setPathInput}
+                canBrowseDirectories={canBrowseDirectories}
+                onBrowseDirectory={handleBrowseDirectory}
                 onLoadConfig={handleLoadConfig}
                 onReset={() => {
                     resetState();
@@ -102,8 +129,7 @@ function App() {
                 selectedSection={selectedSection}
                 onSelectedSection={setSelectedSection}
             />
-            <div className="flex min-w-0 flex-1 flex-col flex-wrap">
-                <AppTopBar />
+            <div className="flex min-w-0 flex-1 flex-col flex-wrap overflow-y-scroll">
                 <Content
                     selectedSection={selectedSection}
                     setSelectedSection={setSelectedSection}

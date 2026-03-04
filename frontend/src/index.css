@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 html, body {
@@ -47,6 +46,6 @@ html, body {
     }
     body {
         @apply bg-background text-foreground;
-        font-family: 'Space Grotesk', 'Trebuchet MS', 'Segoe UI', sans-serif;
+        font-family: 'Roboto', 'Segoe UI', sans-serif;
     }
 }

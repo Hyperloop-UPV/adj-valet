@@ -8,12 +8,12 @@ use clap::Parser;
 use serde::Deserialize;
 use std::{
     net::SocketAddr,
-    path::PathBuf,
+    path::{Path as FsPath, PathBuf},
     sync::{Arc, RwLock},
 };
 use tower_http::cors::CorsLayer;
 use tower_http::services::ServeDir;
-use tracing::{error, info, warn};
+use tracing::{info, warn};
 
 mod config;
 mod error;
@@ -37,6 +37,14 @@ struct Cli {
     /// ADJ directory path (optional, can be set via API)
     #[arg(short, long)]
     adj_path: Option<PathBuf>,
+
+    /// Directory containing the bundled frontend assets
+    #[arg(long, default_value = "web")]
+    web_dir: PathBuf,
+
+    /// File used to publish the backend port for desktop wrappers
+    #[arg(long, default_value = ".adj-valet-port")]
+    port_file: PathBuf,
 }
 
 /// Application state
@@ -211,7 +219,7 @@ async fn find_available_port(host: &str, preferred_port: u16) -> anyhow::Result<
 }
 
 /// Write port information to a file for frontend coordination
-async fn write_port_info(port: u16) -> anyhow::Result<()> {
+async fn write_port_info(port: u16, port_file: &FsPath) -> anyhow::Result<()> {
     use std::fs;
     
     let port_info = serde_json::json!({
@@ -220,13 +228,18 @@ async fn write_port_info(port: u16) -> anyhow::Result<()> {
         "timestamp": chrono::Utc::now().to_rfc3339()
     });
     
-    // Write to a well-known location
-    fs::write(".adj-valet-port", serde_json::to_string_pretty(&port_info)?)?;
-    info!("Port information written to .adj-valet-port");
+    if let Some(parent) = port_file.parent() {
+        if !parent.as_os_str().is_empty() {
+            fs::create_dir_all(parent)?;
+        }
+    }
+
+    fs::write(port_file, serde_json::to_string_pretty(&port_info)?)?;
+    info!("Port information written to {}", port_file.display());
     
-    // Also write to frontend public directory if it exists
+    // Also write to the frontend public directory for local dev.
     if let Ok(frontend_path) = std::env::current_dir() {
-        let frontend_public = frontend_path.join("../adj-valet-front/public/.adj-valet-port");
+        let frontend_public = frontend_path.join("../frontend/public/.adj-valet-port");
         if let Some(parent) = frontend_public.parent() {
             if parent.exists() {
                 if let Err(e) = fs::write(&frontend_public, serde_json::to_string_pretty(&port_info)?) {
@@ -277,7 +290,11 @@ async fn main() -> anyhow::Result<()> {
         .route("/config", get(get_config))
         .route("/config", put(update_config))
         .route("/boards/:name/rename", post(rename_board))
-        .nest_service("/", ServeDir::new("web").fallback(ServeDir::new("web").append_index_html_on_directories(true)))
+        .nest_service(
+            "/",
+            ServeDir::new(cli.web_dir.clone())
+                .fallback(ServeDir::new(cli.web_dir.clone()).append_index_html_on_directories(true)),
+        )
         .layer(CorsLayer::permissive())
         .with_state(state);
 
@@ -299,7 +316,7 @@ async fn main() -> anyhow::Result<()> {
     info!("  POST /boards/:name/rename - Rename a board");
 
     // Write port information to a file for frontend coordination
-    write_port_info(actual_port).await?;
+    write_port_info(actual_port, &cli.port_file).await?;
 
     // Start the server
     let listener = tokio::net::TcpListener::bind(addr).await?;

@@ -25,10 +25,23 @@ export class ApiError extends Error {
 
 class ApiClient {
   private baseUrl: string | null = null;
-  private readonly DISCOVERY_PORTS = Array.from({ length: 50 }, (_, i) => 8000 + i); // Check ports 8000-8049
+  private readonly DISCOVERY_PORTS = Array.from({ length: 101 }, (_, i) => 8000 + i); // Check ports 8000-8100
   private readonly REQUEST_TIMEOUT = 5000;
 
   private async discoverBackend(): Promise<string> {
+    // If the UI is already being served by the backend, prefer same-origin requests.
+    if (window.location.protocol.startsWith('http')) {
+      try {
+        const sameOriginResponse = await fetch(`${window.location.origin}/health`);
+        if (sameOriginResponse.ok) {
+          console.log(`Backend detected on current origin: ${window.location.origin}`);
+          return window.location.origin;
+        }
+      } catch {
+        console.log('Current origin is not the backend, continuing discovery');
+      }
+    }
+
     // First, try to read the port file written by the backend
     try {
       const portFileResponse = await fetch('/.adj-valet-port');

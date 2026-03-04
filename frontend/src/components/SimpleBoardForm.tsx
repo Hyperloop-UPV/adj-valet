@@ -167,7 +167,7 @@ export const SimpleBoardForm = ({
     const sockets = localBoardInfo.sockets || [];
 
     return (
-        <div className="flex h-full w-auto flex-col">
+        <div className="flex h-auto w-full flex-col">
             <div className="flex flex-wrap items-center justify-between gap-4 px-6 pt-6">
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
@@ -226,7 +226,7 @@ export const SimpleBoardForm = ({
                 )}
             </div>
 
-            <div className="grid flex-1 grid-cols-1 gap-6 px-6 pb-8 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 px-6 pb-8 xl:grid-cols-4">
                 <Card className="max-h-[calc(100vh-8rem)] overflow-hidden">
                     <CardHeader className="flex-row items-center justify-between">
                         <CardTitle className="flex items-center gap-2">

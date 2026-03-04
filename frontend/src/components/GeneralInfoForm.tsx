@@ -29,7 +29,7 @@ export const GeneralInfoForm = () => {
                 <Badge variant="secondary">Global</Badge>
             </div>
 
-            <div className="flex flex-grow flex-row flex-wrap gap-3">
+            <div className="flex h-auto w-full flex-row flex-wrap gap-3">
                 {Object.keys(config.general_info).map((section) => (
                     <ArrayObjForm key={section} sectionName={section} />
                 ))}

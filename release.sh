@@ -26,7 +26,7 @@ mkdir -p $RELEASE_DIR/adj-valet
 
 # Build frontend
 echo "Building frontend..."
-cd adj-valet-front
+cd frontend
 npm ci
 npm run build
 cd ..
@@ -48,7 +48,7 @@ echo "Packaging release..."
 cp backend/target/$TARGET/release/backend $RELEASE_DIR/adj-valet/adj-valet-backend
 chmod +x $RELEASE_DIR/adj-valet/adj-valet-backend
 
-cp -r adj-valet-front/dist $RELEASE_DIR/adj-valet/web
+cp -r frontend/dist $RELEASE_DIR/adj-valet/web
 cp README.md $RELEASE_DIR/adj-valet/
 # cp adj/README.md $RELEASE_DIR/adj-valet/ADJ-SPEC.md
 

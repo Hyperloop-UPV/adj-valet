@@ -1,0 +1,65 @@
+{
+  "name": "adj-valet-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron desktop packaging for ADJ Valet",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "cargo build --release --manifest-path backend/Cargo.toml",
+    "stage:electron": "node scripts/stage-electron.mjs",
+    "build:desktop": "npm run build:frontend && npm run build:backend && npm run stage:electron",
+    "electron:start": "npm run build:desktop && electron .",
+    "dist": "npm run build:desktop && electron-builder",
+    "dist:mac": "node scripts/dist-platform.mjs mac",
+    "dist:win": "node scripts/dist-platform.mjs win",
+    "dist:linux": "node scripts/dist-platform.mjs linux",
+    "dist:all": "node scripts/dist-platform.mjs mac win linux"
+  },
+  "devDependencies": {
+    "electron": "^37.4.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "org.hyperloopupv.adj-valet",
+    "productName": "ADJ Valet",
+    "directories": {
+      "output": "dist/electron"
+    },
+    "files": [
+      "electron/main.cjs",
+      "electron/preload.cjs"
+    ],
+    "extraResources": [
+      {
+        "from": "electron/app/backend",
+        "to": "backend"
+      },
+      {
+        "from": "electron/app/web",
+        "to": "web"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "linux": {
+      "category": "Utility",
+      "target": [
+        "pacman",
+        "AppImage",
+        "tar.gz"
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    }
+  }
+}

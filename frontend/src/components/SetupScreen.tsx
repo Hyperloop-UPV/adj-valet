@@ -12,6 +12,8 @@ interface Props {
     isLoading: boolean;
     pathInput: string;
     setPathInput: (value: string) => void;
+    canBrowseDirectories: boolean;
+    onBrowseDirectory: () => void | Promise<void>;
     onLoadConfig: () => void;
     onReset: () => void;
     onLoadDemo: () => void;
@@ -23,6 +25,8 @@ export const SetupScreen = ({
     isLoading,
     pathInput,
     setPathInput,
+    canBrowseDirectories,
+    onBrowseDirectory,
     onLoadConfig,
     onReset,
     onLoadDemo,
@@ -75,10 +79,12 @@ export const SetupScreen = ({
                             </h2>
                             <p className="text-sm text-muted-foreground">
                                 {adjPath && error
-                                    ? 'The cached ADJ path is no longer valid. Enter a new path:'
+                                    ? 'The cached ADJ path is no longer valid. Choose a new directory:'
                                     : adjPath
-                                      ? 'Failed to load configuration. Enter a new path:'
-                                      : 'Enter the path to your ADJ directory to get started.'}
+                                      ? 'Failed to load configuration. Choose a different directory:'
+                                      : canBrowseDirectories
+                                        ? 'Choose your ADJ directory to get started.'
+                                        : 'Enter the path to your ADJ directory to get started.'}
                             </p>
                         </div>
 
@@ -117,15 +123,29 @@ export const SetupScreen = ({
                         )}
 
                         <div className="mt-6 space-y-4">
-                            <Input
-                                placeholder="Enter ADJ directory path..."
-                                value={pathInput}
-                                onChange={(e) => setPathInput(e.target.value)}
-                                onKeyDown={(e) =>
-                                    e.key === 'Enter' && onLoadConfig()
-                                }
-                                disabled={isLoading}
-                            />
+                            <div className="flex flex-col gap-2 sm:flex-row">
+                                <Input
+                                    className="flex-1"
+                                    placeholder="Enter ADJ directory path..."
+                                    value={pathInput}
+                                    onChange={(e) =>
+                                        setPathInput(e.target.value)
+                                    }
+                                    onKeyDown={(e) =>
+                                        e.key === 'Enter' && onLoadConfig()
+                                    }
+                                    disabled={isLoading}
+                                />
+                                {canBrowseDirectories && (
+                                    <Button
+                                        variant="outline"
+                                        onClick={onBrowseDirectory}
+                                        disabled={isLoading}
+                                    >
+                                        Browse...
+                                    </Button>
+                                )}
+                            </div>
                             <div className="flex flex-wrap gap-2">
                                 <Button
                                     className="flex-1 min-w-[200px]"
